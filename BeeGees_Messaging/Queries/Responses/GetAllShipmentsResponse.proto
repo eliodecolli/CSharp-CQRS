@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+package BeeGees.Queries.Responses;
+
+message Shipment {
+    string ShipmentName = 1;
+    string CurrentLocation = 2;
+    int64 LastStatusUpdate = 3;
+}
+
+message GetAllShipmentsResponse {
+    string CustomerId = 1;
+    repeated Shipment Shipments = 2;
+    bool Success = 3;
+}

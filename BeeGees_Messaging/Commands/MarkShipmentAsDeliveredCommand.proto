@@ -1,0 +1,9 @@
+syntax = "proto3";
+
+package BeeGees.Commands;
+
+message MarkShipmentAsDeliveredCommand {
+    string ShipmentId = 1;
+    int64 DeliveredDate = 2;
+    int32 AdditionalTaxes = 3;
+}

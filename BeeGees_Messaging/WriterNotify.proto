@@ -1,0 +1,8 @@
+syntax = "proto3";
+
+package BeeGees;
+
+message WriterNotify{
+    int32 Type = 1;
+    bytes Blob = 2;
+}

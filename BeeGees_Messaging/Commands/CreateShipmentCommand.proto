@@ -1,0 +1,9 @@
+syntax = "proto3";
+
+package BeeGees.Commands;
+
+message CreateShipmentCommand {
+    string ShipName = 1;
+    string ShipAddress = 2;
+    string CustomerID = 3;
+}

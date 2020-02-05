@@ -1,0 +1,10 @@
+syntax = "proto3";
+
+package BeeGees.Commands.Responses;
+
+message ShipmentUpdatedResponse {
+    string ShipmentId = 1;
+    string ShipmentName = 2;
+    string CustomerId = 3;
+    bool Success = 4;
+}

@@ -1,0 +1,8 @@
+C:\Users\edecolli\source\repos\DesignPatternsV2\BeeGees\BeeGees_Messaging\bin\Debug\netcoreapp3.1\BeeGees_Messaging.deps.json
+C:\Users\edecolli\source\repos\DesignPatternsV2\BeeGees\BeeGees_Messaging\bin\Debug\netcoreapp3.1\BeeGees_Messaging.dll
+C:\Users\edecolli\source\repos\DesignPatternsV2\BeeGees\BeeGees_Messaging\bin\Debug\netcoreapp3.1\BeeGees_Messaging.pdb
+C:\Users\edecolli\source\repos\DesignPatternsV2\BeeGees\BeeGees_Messaging\obj\Debug\netcoreapp3.1\BeeGees_Messaging.AssemblyInfoInputs.cache
+C:\Users\edecolli\source\repos\DesignPatternsV2\BeeGees\BeeGees_Messaging\obj\Debug\netcoreapp3.1\BeeGees_Messaging.AssemblyInfo.cs
+C:\Users\edecolli\source\repos\DesignPatternsV2\BeeGees\BeeGees_Messaging\obj\Debug\netcoreapp3.1\BeeGees_Messaging.dll
+C:\Users\edecolli\source\repos\DesignPatternsV2\BeeGees\BeeGees_Messaging\obj\Debug\netcoreapp3.1\BeeGees_Messaging.pdb
+C:\Users\edecolli\source\repos\DesignPatternsV2\BeeGees\BeeGees_Messaging\obj\Debug\netcoreapp3.1\BeeGees_Messaging.csprojAssemblyReference.cache

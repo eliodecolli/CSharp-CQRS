@@ -1,0 +1,11 @@
+C:\Users\edecolli\source\repos\DesignPatternsV2\BeeGees\CompileProtos\bin\Debug\netcoreapp3.1\CompileProtos.exe
+C:\Users\edecolli\source\repos\DesignPatternsV2\BeeGees\CompileProtos\bin\Debug\netcoreapp3.1\CompileProtos.deps.json
+C:\Users\edecolli\source\repos\DesignPatternsV2\BeeGees\CompileProtos\bin\Debug\netcoreapp3.1\CompileProtos.runtimeconfig.json
+C:\Users\edecolli\source\repos\DesignPatternsV2\BeeGees\CompileProtos\bin\Debug\netcoreapp3.1\CompileProtos.runtimeconfig.dev.json
+C:\Users\edecolli\source\repos\DesignPatternsV2\BeeGees\CompileProtos\bin\Debug\netcoreapp3.1\CompileProtos.dll
+C:\Users\edecolli\source\repos\DesignPatternsV2\BeeGees\CompileProtos\bin\Debug\netcoreapp3.1\CompileProtos.pdb
+C:\Users\edecolli\source\repos\DesignPatternsV2\BeeGees\CompileProtos\obj\Debug\netcoreapp3.1\CompileProtos.csprojAssemblyReference.cache
+C:\Users\edecolli\source\repos\DesignPatternsV2\BeeGees\CompileProtos\obj\Debug\netcoreapp3.1\CompileProtos.AssemblyInfoInputs.cache
+C:\Users\edecolli\source\repos\DesignPatternsV2\BeeGees\CompileProtos\obj\Debug\netcoreapp3.1\CompileProtos.AssemblyInfo.cs
+C:\Users\edecolli\source\repos\DesignPatternsV2\BeeGees\CompileProtos\obj\Debug\netcoreapp3.1\CompileProtos.dll
+C:\Users\edecolli\source\repos\DesignPatternsV2\BeeGees\CompileProtos\obj\Debug\netcoreapp3.1\CompileProtos.pdb

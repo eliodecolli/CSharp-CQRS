@@ -1,0 +1,12 @@
+syntax = "proto3";
+
+package BeeGees.Events;
+
+message ShipmentUpdatedEvent {
+    string ShipmentId = 1;
+
+    string Status = 2;
+    string Location = 3;
+    int64 LastUpdated = 4;
+    string CustomerId = 5;
+}

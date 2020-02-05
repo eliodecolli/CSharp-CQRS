@@ -1,0 +1,8 @@
+﻿syntax = "proto3";
+
+package BeeGees.Events;
+
+message ReaderConfirmation {
+	bool Success = 1;
+	string Message = 2;
+}

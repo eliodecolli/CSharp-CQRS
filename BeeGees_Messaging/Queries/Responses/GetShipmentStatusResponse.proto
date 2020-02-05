@@ -1,0 +1,10 @@
+syntax = "proto3";
+
+package BeeGees.Queries.Responses;
+
+message GetShipmentStatusResponse {
+    string ShipmentName = 1;
+    string Status = 2;
+    int64 LastUpdated = 3;
+    bool Success = 4;
+}

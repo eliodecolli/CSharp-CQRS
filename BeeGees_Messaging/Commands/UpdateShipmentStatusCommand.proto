@@ -1,0 +1,9 @@
+syntax = "proto3";
+
+package BeeGees.Commands;
+
+message UpdateShipmentCommand {
+    string ShipmentId = 1;
+    string Status = 2;
+    string Location = 3;
+}

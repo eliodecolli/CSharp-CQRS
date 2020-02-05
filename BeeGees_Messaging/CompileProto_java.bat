@@ -1,0 +1,1 @@
+Start-Process -FilePath "CompileProtos.exe" -ArgumentList "java_out"

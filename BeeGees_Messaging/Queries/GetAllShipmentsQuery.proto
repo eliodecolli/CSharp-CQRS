@@ -1,0 +1,8 @@
+syntax = "proto3";
+
+package BeeGees.Queries;
+
+message GetAllShipmentsQuery {
+    string CustomerId = 1;
+    string Sender = 2;
+}
