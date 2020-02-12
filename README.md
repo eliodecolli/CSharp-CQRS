@@ -16,7 +16,7 @@ The initial commit contains a code which is far from being well documented, but 
 
 ## Synchronization between Write-Read nodes
 
-Each node has its own database, therefore to keep the data up-to-date, I tried to implement an event-sourcing pattern, and let RabbitMQ act as persistence for published events.
+Each node has its own database, therefore to keep the data up-to-date, I tried to implement an event-oriented pattern, and let RabbitMQ act as persistence for published events.
 The application flow goes as follows:
 
  1. The client publishes a command to the writer's queue.
