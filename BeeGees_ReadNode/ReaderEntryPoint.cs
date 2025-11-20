@@ -55,7 +55,7 @@ namespace BeeGees_ReadNode
 
         private async Task ConsumerEvent_ReceivedAsync(object sender, BasicDeliverEventArgs e)
         {
-            Log.Info(" [x] Received consumer event");`
+            Log.Info(" [x] Received consumer event");
             var message = BaseMessage.Parser.ParseFrom(e.Body.ToArray());
             IMessage? response = null;
 
