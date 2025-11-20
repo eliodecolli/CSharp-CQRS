@@ -1,3 +1,5 @@
+![DOTNET CI](https://github.com/eliodecolli/CSharp-CQRS/actions/workflows/dotnet.yml/badge.svg)
+
 # CSharp-CQRS
  A basic CQRS implementation, with a similiar approach to that of microservices.
 ## Summary
