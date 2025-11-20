@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Data.Entity;
+using Microsoft.EntityFrameworkCore;
 
 namespace BeeGees_ReadNode.Facade.Repository
 {
@@ -18,27 +15,28 @@ namespace BeeGees_ReadNode.Facade.Repository
 
         public T InsertNew(T inData)
         {
-           return dbSet.Add(inData);
+            dbSet.Add(inData);
+            return inData;
         }
 
-        public T Find(object id)
+        public T? Find(object id)
         {
             return dbSet.Find(id);
         }
 
         public T[] Get()
         {
-            return dbSet.AsQueryable().ToArray();
+            return dbSet.ToArray();
         }
 
         public T[] Get(Func<T, bool> predicate)
         {
-            return dbSet.AsQueryable().Where(predicate).ToArray();
+            return dbSet.AsEnumerable().Where(predicate).ToArray();
         }
 
         public void Update(T entity)
         {
-            context.Entry<T>(entity).State = EntityState.Modified;
+            context.Entry(entity).State = EntityState.Modified;
         }
     }
 }

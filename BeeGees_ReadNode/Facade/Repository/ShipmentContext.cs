@@ -1,8 +1,5 @@
-﻿using BeeGees_ReadNode.Facade.Entities;
-using System;
-using System.Collections.Generic;
-using System.Data.Entity;
-using System.Text;
+using BeeGees_ReadNode.Facade.Entities;
+using Microsoft.EntityFrameworkCore;
 
 namespace BeeGees_ReadNode.Facade.Repository
 {
@@ -10,13 +7,22 @@ namespace BeeGees_ReadNode.Facade.Repository
     {
         public DbSet<Shipment> Shipments { get; set; }
 
-        public ShipmentContext() : base("Server=localhost;Database=BeeGees_Reader;Trusted_Connection=True;") { }
+        public ShipmentContext() { }
 
-        protected override void OnModelCreating(DbModelBuilder modelBuilder)
+        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        {
+            optionsBuilder.UseNpgsql("Host=localhost;Port=61660;Database=BeeGees_Reader;Username=postgres;Password=postgres");
+        }
+
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<Shipment>()
-                .HasKey(x => x.ShipmentId)
-                .Property(x => x.ShipmentId).HasDatabaseGeneratedOption(System.ComponentModel.DataAnnotations.Schema.DatabaseGeneratedOption.None);
+                .HasKey(x => x.ShipmentId);
+
+            modelBuilder.Entity<Shipment>()
+                .Property(x => x.ShipmentId)
+                .ValueGeneratedNever();
+
             modelBuilder.Entity<Shipment>()
                 .ToTable("Read_Shipments");
 

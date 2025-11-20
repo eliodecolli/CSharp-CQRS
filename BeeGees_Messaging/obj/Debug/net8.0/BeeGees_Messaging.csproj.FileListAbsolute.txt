@@ -1,0 +1,13 @@
+/Users/ritech/Desktop/stuff/CSharp-CQRS/BeeGees_Messaging/bin/Debug/net8.0/BeeGees_Messaging.deps.json
+/Users/ritech/Desktop/stuff/CSharp-CQRS/BeeGees_Messaging/bin/Debug/net8.0/BeeGees_Messaging.dll
+/Users/ritech/Desktop/stuff/CSharp-CQRS/BeeGees_Messaging/bin/Debug/net8.0/BeeGees_Messaging.pdb
+/Users/ritech/Desktop/stuff/CSharp-CQRS/BeeGees_Messaging/obj/Debug/net8.0/BeeGees_Messaging.csproj.AssemblyReference.cache
+/Users/ritech/Desktop/stuff/CSharp-CQRS/BeeGees_Messaging/obj/Debug/net8.0/BeeGees_Messaging.GeneratedMSBuildEditorConfig.editorconfig
+/Users/ritech/Desktop/stuff/CSharp-CQRS/BeeGees_Messaging/obj/Debug/net8.0/BeeGees_Messaging.AssemblyInfoInputs.cache
+/Users/ritech/Desktop/stuff/CSharp-CQRS/BeeGees_Messaging/obj/Debug/net8.0/BeeGees_Messaging.AssemblyInfo.cs
+/Users/ritech/Desktop/stuff/CSharp-CQRS/BeeGees_Messaging/obj/Debug/net8.0/BeeGees_Messaging.csproj.CoreCompileInputs.cache
+/Users/ritech/Desktop/stuff/CSharp-CQRS/BeeGees_Messaging/obj/Debug/net8.0/BeeGees_Messaging.sourcelink.json
+/Users/ritech/Desktop/stuff/CSharp-CQRS/BeeGees_Messaging/obj/Debug/net8.0/BeeGees_Messaging.dll
+/Users/ritech/Desktop/stuff/CSharp-CQRS/BeeGees_Messaging/obj/Debug/net8.0/refint/BeeGees_Messaging.dll
+/Users/ritech/Desktop/stuff/CSharp-CQRS/BeeGees_Messaging/obj/Debug/net8.0/BeeGees_Messaging.pdb
+/Users/ritech/Desktop/stuff/CSharp-CQRS/BeeGees_Messaging/obj/Debug/net8.0/ref/BeeGees_Messaging.dll

@@ -3,3 +3,6 @@
 ################################################################################
 
 /.vs/BeeGees/v16
+
+# ArchDoc configuration (contains API keys)
+.archdoc.config.json

@@ -1,5 +1,4 @@
-﻿using BeeGees_ReadNode.Facade.Entities;
-using System;
+using BeeGees_ReadNode.Facade.Entities;
 
 namespace BeeGees_ReadNode.Facade.Repository
 {

@@ -1,37 +1,30 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\edecolli\\source\\repos\\DesignPatternsV2\\BeeGees\\BeeGees_ReadNode\\BeeGees_ReadNode.csproj": {}
+    "/home/elio/Downloads/CSharp-CQRS/CSharp-CQRS/BeeGees_ReadNode/BeeGees_ReadNode.csproj": {}
   },
   "projects": {
-    "C:\\Users\\edecolli\\source\\repos\\DesignPatternsV2\\BeeGees\\BeeGees_Messaging\\BeeGees_Messaging.csproj": {
+    "/home/elio/Downloads/CSharp-CQRS/CSharp-CQRS/BeeGees_Messaging/BeeGees_Messaging.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\edecolli\\source\\repos\\DesignPatternsV2\\BeeGees\\BeeGees_Messaging\\BeeGees_Messaging.csproj",
+        "projectUniqueName": "/home/elio/Downloads/CSharp-CQRS/CSharp-CQRS/BeeGees_Messaging/BeeGees_Messaging.csproj",
         "projectName": "BeeGees_Messaging",
-        "projectPath": "C:\\Users\\edecolli\\source\\repos\\DesignPatternsV2\\BeeGees\\BeeGees_Messaging\\BeeGees_Messaging.csproj",
-        "packagesPath": "C:\\Users\\edecolli\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\edecolli\\source\\repos\\DesignPatternsV2\\BeeGees\\BeeGees_Messaging\\obj\\",
+        "projectPath": "/home/elio/Downloads/CSharp-CQRS/CSharp-CQRS/BeeGees_Messaging/BeeGees_Messaging.csproj",
+        "packagesPath": "/home/elio/.nuget/packages/",
+        "outputPath": "/home/elio/Downloads/CSharp-CQRS/CSharp-CQRS/BeeGees_Messaging/obj/",
         "projectStyle": "PackageReference",
-        "fallbackFolders": [
-          "C:\\Microsoft\\Xamarin\\NuGet\\",
-          "C:\\Program Files\\dotnet\\sdk\\NuGetFallbackFolder"
-        ],
         "configFilePaths": [
-          "C:\\Users\\edecolli\\AppData\\Roaming\\NuGet\\NuGet.Config",
-          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config",
-          "C:\\Program Files (x86)\\NuGet\\Config\\Xamarin.Offline.config"
+          "/home/elio/.nuget/NuGet/NuGet.Config"
         ],
         "originalTargetFrameworks": [
-          "netcoreapp3.1"
+          "net8.0"
         ],
         "sources": {
-          "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
-          "C:\\Users\\edecolli\\Downloads\\DptTaxObligationIntegration\\DptTaxObligationIntegration\\packages\\DIS.Integration.Package.1.0.0": {},
           "https://api.nuget.org/v3/index.json": {}
         },
         "frameworks": {
-          "netcoreapp3.1": {
+          "net8.0": {
+            "targetAlias": "net8.0",
             "projectReferences": {}
           }
         },
@@ -39,24 +32,27 @@
           "warnAsError": [
             "NU1605"
           ]
-        }
+        },
+        "restoreAuditProperties": {
+          "enableAudit": "true",
+          "auditLevel": "low",
+          "auditMode": "direct"
+        },
+        "SdkAnalysisLevel": "9.0.100"
       },
       "frameworks": {
-        "netcoreapp3.1": {
+        "net8.0": {
+          "targetAlias": "net8.0",
           "dependencies": {
             "Google.Protobuf": {
               "target": "Package",
-              "version": "[3.11.2, )"
-            },
-            "Grpc": {
-              "target": "Package",
-              "version": "[2.26.0, )"
+              "version": "[3.25.1, )"
             },
             "Grpc.Tools": {
               "include": "Runtime, Build, Native, ContentFiles, Analyzers, BuildTransitive",
               "suppressParent": "All",
               "target": "Package",
-              "version": "[2.26.0, )"
+              "version": "[2.60.0, )"
             }
           },
           "imports": [
@@ -65,50 +61,54 @@
             "net47",
             "net471",
             "net472",
-            "net48"
+            "net48",
+            "net481"
           ],
           "assetTargetFallback": true,
           "warn": true,
+          "downloadDependencies": [
+            {
+              "name": "Microsoft.AspNetCore.App.Ref",
+              "version": "[8.0.20, 8.0.20]"
+            },
+            {
+              "name": "Microsoft.NETCore.App.Ref",
+              "version": "[8.0.20, 8.0.20]"
+            }
+          ],
           "frameworkReferences": {
             "Microsoft.NETCore.App": {
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\3.1.100\\RuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "/usr/share/dotnet/sdk/9.0.110/PortableRuntimeIdentifierGraph.json"
         }
       }
     },
-    "C:\\Users\\edecolli\\source\\repos\\DesignPatternsV2\\BeeGees\\BeeGees_ReadNode\\BeeGees_ReadNode.csproj": {
+    "/home/elio/Downloads/CSharp-CQRS/CSharp-CQRS/BeeGees_ReadNode/BeeGees_ReadNode.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\edecolli\\source\\repos\\DesignPatternsV2\\BeeGees\\BeeGees_ReadNode\\BeeGees_ReadNode.csproj",
+        "projectUniqueName": "/home/elio/Downloads/CSharp-CQRS/CSharp-CQRS/BeeGees_ReadNode/BeeGees_ReadNode.csproj",
         "projectName": "BeeGees_ReadNode",
-        "projectPath": "C:\\Users\\edecolli\\source\\repos\\DesignPatternsV2\\BeeGees\\BeeGees_ReadNode\\BeeGees_ReadNode.csproj",
-        "packagesPath": "C:\\Users\\edecolli\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\edecolli\\source\\repos\\DesignPatternsV2\\BeeGees\\BeeGees_ReadNode\\obj\\",
+        "projectPath": "/home/elio/Downloads/CSharp-CQRS/CSharp-CQRS/BeeGees_ReadNode/BeeGees_ReadNode.csproj",
+        "packagesPath": "/home/elio/.nuget/packages/",
+        "outputPath": "/home/elio/Downloads/CSharp-CQRS/CSharp-CQRS/BeeGees_ReadNode/obj/",
         "projectStyle": "PackageReference",
-        "fallbackFolders": [
-          "C:\\Microsoft\\Xamarin\\NuGet\\",
-          "C:\\Program Files\\dotnet\\sdk\\NuGetFallbackFolder"
-        ],
         "configFilePaths": [
-          "C:\\Users\\edecolli\\AppData\\Roaming\\NuGet\\NuGet.Config",
-          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config",
-          "C:\\Program Files (x86)\\NuGet\\Config\\Xamarin.Offline.config"
+          "/home/elio/.nuget/NuGet/NuGet.Config"
         ],
         "originalTargetFrameworks": [
-          "netcoreapp3.1"
+          "net8.0"
         ],
         "sources": {
-          "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
-          "C:\\Users\\edecolli\\Downloads\\DptTaxObligationIntegration\\DptTaxObligationIntegration\\packages\\DIS.Integration.Package.1.0.0": {},
           "https://api.nuget.org/v3/index.json": {}
         },
         "frameworks": {
-          "netcoreapp3.1": {
+          "net8.0": {
+            "targetAlias": "net8.0",
             "projectReferences": {
-              "C:\\Users\\edecolli\\source\\repos\\DesignPatternsV2\\BeeGees\\BeeGees_Messaging\\BeeGees_Messaging.csproj": {
-                "projectPath": "C:\\Users\\edecolli\\source\\repos\\DesignPatternsV2\\BeeGees\\BeeGees_Messaging\\BeeGees_Messaging.csproj"
+              "/home/elio/Downloads/CSharp-CQRS/CSharp-CQRS/BeeGees_Messaging/BeeGees_Messaging.csproj": {
+                "projectPath": "/home/elio/Downloads/CSharp-CQRS/CSharp-CQRS/BeeGees_Messaging/BeeGees_Messaging.csproj"
               }
             }
           }
@@ -117,18 +117,35 @@
           "warnAsError": [
             "NU1605"
           ]
-        }
+        },
+        "restoreAuditProperties": {
+          "enableAudit": "true",
+          "auditLevel": "low",
+          "auditMode": "direct"
+        },
+        "SdkAnalysisLevel": "9.0.100"
       },
       "frameworks": {
-        "netcoreapp3.1": {
+        "net8.0": {
+          "targetAlias": "net8.0",
           "dependencies": {
-            "EntityFramework": {
+            "Microsoft.EntityFrameworkCore": {
               "target": "Package",
-              "version": "[6.4.0, )"
+              "version": "[9.0.11, )"
+            },
+            "Microsoft.EntityFrameworkCore.Design": {
+              "include": "Runtime, Build, Native, ContentFiles, Analyzers, BuildTransitive",
+              "suppressParent": "All",
+              "target": "Package",
+              "version": "[9.0.11, )"
+            },
+            "Npgsql.EntityFrameworkCore.PostgreSQL": {
+              "target": "Package",
+              "version": "[9.0.4, )"
             },
             "RabbitMQ.Client": {
               "target": "Package",
-              "version": "[5.1.2, )"
+              "version": "[7.2.0, )"
             }
           },
           "imports": [
@@ -137,16 +154,31 @@
             "net47",
             "net471",
             "net472",
-            "net48"
+            "net48",
+            "net481"
           ],
           "assetTargetFallback": true,
           "warn": true,
+          "downloadDependencies": [
+            {
+              "name": "Microsoft.AspNetCore.App.Ref",
+              "version": "[8.0.20, 8.0.20]"
+            },
+            {
+              "name": "Microsoft.NETCore.App.Host.linux-x64",
+              "version": "[8.0.20, 8.0.20]"
+            },
+            {
+              "name": "Microsoft.NETCore.App.Ref",
+              "version": "[8.0.20, 8.0.20]"
+            }
+          ],
           "frameworkReferences": {
             "Microsoft.NETCore.App": {
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\3.1.100\\RuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "/usr/share/dotnet/sdk/9.0.110/PortableRuntimeIdentifierGraph.json"
         }
       }
     }

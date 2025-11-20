@@ -1,38 +1,34 @@
-﻿using System;
 using RabbitMQ.Client;
 using BeeGees.Commands;
 using BeeGees.Commands.Responses;
 using BeeGees.Queries;
 using BeeGees.Queries.Responses;
-using System.Collections.Generic;
-using System.Diagnostics;
 using RabbitMQ.Client.Events;
 using BeeGees;
 using BeeGees_Messaging;
-using System.IO;
 using Google.Protobuf;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace BeeGees_Client
 {
     class Program
     {
-        static Dictionary<string, Type> inboundTypes;
-        static Dictionary<string, object> inbound;
+        static Dictionary<string, Type> inboundTypes = new();
+        static Dictionary<string, object> inbound = new();
 
-        static IConnection connection;
+        static IConnection? connection;
 
-        static void SendNewShipment(string shipName)
+        static async Task SendNewShipmentAsync(string shipName)
         {
-            var conFac = new ConnectionFactory() { HostName = "localhost" };
-            using var connection = conFac.CreateConnection();
-            using var model = connection.CreateModel();
+            var conFac = new ConnectionFactory() { HostName = "localhost", Port = 62660 };
+            await using var conn = await conFac.CreateConnectionAsync();
+            await using var channel = await conn.CreateChannelAsync();
 
             var corrId = Guid.NewGuid().ToString();
-            var props = model.CreateBasicProperties();
-            props.CorrelationId = corrId;
-            props.Persistent = true;
+            var props = new BasicProperties
+            {
+                CorrelationId = corrId,
+                Persistent = true
+            };
 
             var shipment = new CreateShipmentCommand()
             {
@@ -47,18 +43,20 @@ namespace BeeGees_Client
                 Blob = ByteString.CopyFrom(shipment.ToByteArray())
             };
 
-            model.BasicPublish("writer_exchange", "client_writer", props, bmsg.ToByteArray());
+            await channel.BasicPublishAsync("writer_exchange", "client_writer", false, props, bmsg.ToByteArray());
             inboundTypes.Add(corrId, typeof(ShipmentCreatedResponse));
         }
 
-        static void UpdateShipment(string shipId, string location)
+        static async Task UpdateShipmentAsync(string shipId, string location)
         {
-            using var model = connection.CreateModel();
+            await using var channel = await connection!.CreateChannelAsync();
 
             var corrId = Guid.NewGuid().ToString();
-            var props = model.CreateBasicProperties();
-            props.CorrelationId = corrId;
-            props.Persistent = true;
+            var props = new BasicProperties
+            {
+                CorrelationId = corrId,
+                Persistent = true
+            };
 
             var shipment = new UpdateShipmentCommand()
             {
@@ -73,18 +71,20 @@ namespace BeeGees_Client
                 Blob = ByteString.CopyFrom(shipment.ToByteArray())
             };
 
-            model.BasicPublish("writer_exchange", "client_writer", props, bmsg.ToByteArray());
+            await channel.BasicPublishAsync("writer_exchange", "client_writer", false, props, bmsg.ToByteArray());
             inboundTypes.Add(corrId, typeof(ShipmentUpdatedResponse));
         }
 
-        private static void AskForShipments()
+        private static async Task AskForShipmentsAsync()
         {
-            using var model = connection.CreateModel();
+            await using var channel = await connection!.CreateChannelAsync();
 
             var corrId = Guid.NewGuid().ToString();
-            var props = model.CreateBasicProperties();
-            props.CorrelationId = corrId;
-            props.Persistent = true;
+            var props = new BasicProperties
+            {
+                CorrelationId = corrId,
+                Persistent = true
+            };
 
             var shipment = new GetAllShipmentsQuery()
             {
@@ -98,18 +98,20 @@ namespace BeeGees_Client
                 Blob = ByteString.CopyFrom(shipment.ToByteArray())
             };
 
-            model.BasicPublish("reader_exchange", "client_reader", props, bmsg.ToByteArray());
+            await channel.BasicPublishAsync("reader_exchange", "client_reader", false, props, bmsg.ToByteArray());
             inboundTypes.Add(corrId, typeof(GetAllShipmentsResponse));
         }
 
-        private static void AskForStatus(string shipmentId)
+        private static async Task AskForStatusAsync(string shipmentId)
         {
-            using var model = connection.CreateModel();
+            await using var channel = await connection!.CreateChannelAsync();
 
             var corrId = Guid.NewGuid().ToString();
-            var props = model.CreateBasicProperties();
-            props.CorrelationId = corrId;
-            props.Persistent = true;
+            var props = new BasicProperties
+            {
+                CorrelationId = corrId,
+                Persistent = true
+            };
 
             var shipment = new GetShipmentStatusQuery()
             {
@@ -123,18 +125,20 @@ namespace BeeGees_Client
                 Blob = ByteString.CopyFrom(shipment.ToByteArray())
             };
 
-            model.BasicPublish("reader_exchange", "client_reader", props, bmsg.ToByteArray());
+            await channel.BasicPublishAsync("reader_exchange", "client_reader", false, props, bmsg.ToByteArray());
             inboundTypes.Add(corrId, typeof(GetShipmentStatusResponse));
         }
 
-        private static void MarkAsDelivered(string shipmentId)
+        private static async Task MarkAsDeliveredAsync(string shipmentId)
         {
-            using var model = connection.CreateModel();
+            await using var channel = await connection!.CreateChannelAsync();
 
             var corrId = Guid.NewGuid().ToString();
-            var props = model.CreateBasicProperties();
-            props.CorrelationId = corrId;
-            props.Persistent = true;
+            var props = new BasicProperties
+            {
+                CorrelationId = corrId,
+                Persistent = true
+            };
 
             var shipment = new MarkShipmentAsDeliveredCommand()
             {
@@ -149,82 +153,82 @@ namespace BeeGees_Client
                 Blob = ByteString.CopyFrom(shipment.ToByteArray())
             };
 
-            model.BasicPublish("writer_exchange", "client_writer", props, bmsg.ToByteArray());
+            await channel.BasicPublishAsync("writer_exchange", "client_writer", false, props, bmsg.ToByteArray());
             inboundTypes.Add(corrId, typeof(ShipmentDeliveredResponse));
         }
 
-        static void Main(string[] args)
+        static async Task Main(string[] args)
         {
-            //Console.WriteLine("Press any key to start the client...");
-            //Console.Read();
-            Thread.Sleep(5000);
-            inbound = new Dictionary<string, object>();
-            inboundTypes = new Dictionary<string, Type>();
+            await Task.Delay(5000);
 
-            var stopwatch = new Stopwatch();
-            var conFac = new ConnectionFactory() { HostName = "localhost" };
-            connection = conFac.CreateConnection();
-            using var channelWriter = connection.CreateModel();
-            channelWriter.ExchangeDeclare("client", ExchangeType.Direct, true, false, null);
-            channelWriter.QueueDeclare("writer_client", true, false, false, null);
-            channelWriter.QueueBind("writer_client", "client", "writer_client", null);
+            var conFac = new ConnectionFactory() { HostName = "localhost", Port = 62660 };
+            connection = await conFac.CreateConnectionAsync();
 
-            var writerConsumer = new EventingBasicConsumer(channelWriter);
-            writerConsumer.Received += writerChannel_Received;
-            channelWriter.BasicConsume("writer_client", true, writerConsumer);
+            await using var channelWriter = await connection.CreateChannelAsync();
+            await channelWriter.ExchangeDeclareAsync("client", ExchangeType.Direct, true, false, null);
+            await channelWriter.QueueDeclareAsync("writer_client", true, false, false, null);
+            await channelWriter.QueueBindAsync("writer_client", "client", "writer_client", null);
 
-            SendNewShipment("Mary Jane");
+            var writerConsumer = new AsyncEventingBasicConsumer(channelWriter);
+            writerConsumer.ReceivedAsync += WriterChannel_ReceivedAsync;
+            await channelWriter.BasicConsumeAsync("writer_client", true, writerConsumer);
 
+            await SendNewShipmentAsync("Mary Jane");
 
             // set up reader communications
-            using var reader_channel = connection.CreateModel();
-            reader_channel.QueueDeclare("reader_client", true, false, false, null);
-            reader_channel.ExchangeDeclare("client", "direct", true, false, null);
-            reader_channel.QueueBind("reader_client", "client", "reader_client", null);
+            await using var reader_channel = await connection.CreateChannelAsync();
+            await reader_channel.QueueDeclareAsync("reader_client", true, false, false, null);
+            await reader_channel.ExchangeDeclareAsync("client", ExchangeType.Direct, true, false, null);
+            await reader_channel.QueueBindAsync("reader_client", "client", "reader_client", null);
 
-            var readerConsumer = new EventingBasicConsumer(reader_channel);
-            readerConsumer.Received += ReaderConsumer_Received;
-            reader_channel.BasicConsume("reader_client", true, readerConsumer);
+            var readerConsumer = new AsyncEventingBasicConsumer(reader_channel);
+            readerConsumer.ReceivedAsync += ReaderConsumer_ReceivedAsync;
+            await reader_channel.BasicConsumeAsync("reader_client", true, readerConsumer);
 
             Console.WriteLine("waiting");
 
-
-            start:
-            Console.Write(">>> ");
-            var cmd = Console.ReadLine();
-            if (cmd.StartsWith("update-shipment"))
+            while (true)
             {
-                var id = cmd.Split(' ')[1];
-                var location = cmd.Split(' ')[2];
+                Console.Write(">>> ");
+                var cmd = Console.ReadLine();
 
-                UpdateShipment(id, location);
-            }
-            else if (cmd == "exit")
-                return;
-            else if(cmd == "get-shipments")
-            {
-                for (int i = 0; i < 5; i++)
+                if (string.IsNullOrEmpty(cmd))
+                    continue;
+
+                if (cmd.StartsWith("update-shipment"))
                 {
-                    /*Task.Run(() =>*/AskForShipments()/*)*/;
+                    var parts = cmd.Split(' ');
+                    if (parts.Length >= 3)
+                    {
+                        var id = parts[1];
+                        var location = parts[2];
+                        await UpdateShipmentAsync(id, location);
+                    }
+                }
+                else if (cmd == "exit")
+                    return;
+                else if (cmd == "get-shipments")
+                {
+                    for (int i = 0; i < 5; i++)
+                    {
+                        await AskForShipmentsAsync();
+                    }
                 }
             }
-            
-            goto start;
         }
 
-        private static void ReaderConsumer_Received(object sender, BasicDeliverEventArgs e)
+        private static Task ReaderConsumer_ReceivedAsync(object sender, BasicDeliverEventArgs e)
         {
             if (string.IsNullOrEmpty(e.BasicProperties.CorrelationId))
-                return;
+                return Task.CompletedTask;
 
-            if(inboundTypes.ContainsKey(e.BasicProperties.CorrelationId))
+            if (inboundTypes.ContainsKey(e.BasicProperties.CorrelationId))
             {
                 var type = inboundTypes[e.BasicProperties.CorrelationId];
 
-                if(type == typeof(GetAllShipmentsResponse))
+                if (type == typeof(GetAllShipmentsResponse))
                 {
-                    // getting our types
-                    var msg = GetAllShipmentsResponse.Parser.ParseFrom(e.Body);
+                    var msg = GetAllShipmentsResponse.Parser.ParseFrom(e.Body.ToArray());
 
                     if (msg.Success)
                     {
@@ -237,10 +241,9 @@ namespace BeeGees_Client
                     else
                         Console.WriteLine("Err.. something wrong happened :/");
                 }
-                if(type == typeof(GetShipmentStatusResponse))
+                if (type == typeof(GetShipmentStatusResponse))
                 {
-                    // getting our types
-                    var msg = GetShipmentStatusResponse.Parser.ParseFrom(e.Body);
+                    var msg = GetShipmentStatusResponse.Parser.ParseFrom(e.Body.ToArray());
 
                     if (msg.Success)
                     {
@@ -250,60 +253,53 @@ namespace BeeGees_Client
                         Console.WriteLine("Err.. something wrong happened :/");
                 }
             }
+
+            return Task.CompletedTask;
         }
 
         private static int steps = 0;
 
-        private static void writerChannel_Received(object sender, BasicDeliverEventArgs e)
+        private static async Task WriterChannel_ReceivedAsync(object sender, BasicDeliverEventArgs e)
         {
             if (string.IsNullOrEmpty(e.BasicProperties.CorrelationId))
                 return;
 
-            if(inboundTypes.ContainsKey(e.BasicProperties.CorrelationId))
+            if (inboundTypes.ContainsKey(e.BasicProperties.CorrelationId))
             {
-                //Console.WriteLine($"{e.BasicProperties.CorrelationId} -> Magum P.I. is a great show, the 2018 remake is also pretty good and extremely underrated.");
-                //var baseMessage = BaseMessage.Parser.ParseFrom(e.Body);
-
                 var type = inboundTypes[e.BasicProperties.CorrelationId];
-                if(type == typeof(ShipmentCreatedResponse))
+                if (type == typeof(ShipmentCreatedResponse))
                 {
-                    // yaay
-                    var message = ShipmentCreatedResponse.Parser.ParseFrom(e.Body);
-                    if(message.Success)
+                    var message = ShipmentCreatedResponse.Parser.ParseFrom(e.Body.ToArray());
+                    if (message.Success)
                     {
                         Console.WriteLine($"A new shipment with ID {message.ShipmentId} has been created");
                     }
                     inbound[e.BasicProperties.CorrelationId] = message;
-
-                    //UpdateShipment(message.ShipmentId, "City " + steps.ToString());
                 }
-                else if(type == typeof(ShipmentUpdatedResponse))
+                else if (type == typeof(ShipmentUpdatedResponse))
                 {
-                    var message = ShipmentUpdatedResponse.Parser.ParseFrom(e.Body);
-                    if(message.Success)
+                    var message = ShipmentUpdatedResponse.Parser.ParseFrom(e.Body.ToArray());
+                    if (message.Success)
                     {
                         Console.WriteLine($"Shipmet {message.ShipmentName} with ID {message.ShipmentId} has been updated");
                     }
                     inbound[e.BasicProperties.CorrelationId] = message;
 
-                    new Thread(() =>
+                    if (steps < 5)
                     {
-                        if (steps < 5)
-                        {
-                            AskForStatus(message.ShipmentId);
-                            UpdateShipment(message.ShipmentId, "City " + steps.ToString());
-                            steps++;
-                        }
-                        else
-                        {
-                            MarkAsDelivered(message.ShipmentId);
-                        }
-                    }).Start();
+                        await AskForStatusAsync(message.ShipmentId);
+                        await UpdateShipmentAsync(message.ShipmentId, "City " + steps.ToString());
+                        steps++;
+                    }
+                    else
+                    {
+                        await MarkAsDeliveredAsync(message.ShipmentId);
+                    }
                 }
-                else if(type == typeof(ShipmentDeliveredResponse))
+                else if (type == typeof(ShipmentDeliveredResponse))
                 {
-                    var message = ShipmentDeliveredResponse.Parser.ParseFrom(e.Body);
-                    if(message.Success)
+                    var message = ShipmentDeliveredResponse.Parser.ParseFrom(e.Body.ToArray());
+                    if (message.Success)
                     {
                         Console.WriteLine($"Shipment {message.ShipmentId} has been delivered");
                     }
