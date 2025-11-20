@@ -1,6 +1,6 @@
-using BeeGees_ReadNode.Facade.Entities;
+using BeeGees_WriteNode.Facade.Entities;
 
-namespace BeeGees_ReadNode.Facade.Repository
+namespace BeeGees_WriteNode.Facade.Repository
 {
     public class UnitOfWork : IDisposable
     {

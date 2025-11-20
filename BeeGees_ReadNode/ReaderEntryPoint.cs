@@ -1,11 +1,10 @@
-﻿using BeeGees.Queries;
+using BeeGees.Queries;
 using BeeGees.Queries.Responses;
 using BeeGees;
 using BeeGees_Messaging;
 using BeeGees_ReadNode.Facade;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
-using System.IO;
 using Google.Protobuf;
 using BeeGees.Events;
 
@@ -16,51 +15,49 @@ namespace BeeGees_ReadNode
         private readonly ConnectionFactory connectionFactory;
         private readonly IFacade facade;
 
-        private  IConnection connection;
+        private IConnection? connection;
 
-        private  IModel clientChannel;
-        private  IModel eventsChannel;
+        private IChannel? clientChannel;
+        private IChannel? eventsChannel;
 
         public ReaderEntryPoint()
         {
-            connectionFactory = new ConnectionFactory();
+            connectionFactory = new ConnectionFactory() { HostName = "localhost", Port = 62660 };
             facade = new ReaderFacade();
 
             facade.InitializeFastAccess(3);
         }
 
-        public void WaitForConnections()
+        public async Task WaitForConnectionsAsync()
         {
-            connection = connectionFactory.CreateConnection();
-            clientChannel = connection.CreateModel();
-            eventsChannel = connection.CreateModel();
-
+            connection = await connectionFactory.CreateConnectionAsync();
+            clientChannel = await connection.CreateChannelAsync();
+            eventsChannel = await connection.CreateChannelAsync();
 
             // create a new reader exchange
-            clientChannel.ExchangeDeclare("reader_exchange", ExchangeType.Direct, true, false);
-            var queue = clientChannel.QueueDeclare("client_reader");
-            clientChannel.QueueBind("client_reader", "reader_exchange", "client_reader");
-            var consumerClient = new EventingBasicConsumer(clientChannel);
-            consumerClient.Received += Consumer_Received;
+            await clientChannel.ExchangeDeclareAsync("reader_exchange", ExchangeType.Direct, true, false);
+            await clientChannel.QueueDeclareAsync("client_reader", false, false, false, null);
+            await clientChannel.QueueBindAsync("client_reader", "reader_exchange", "client_reader");
+            var consumerClient = new AsyncEventingBasicConsumer(clientChannel);
+            consumerClient.ReceivedAsync += Consumer_ReceivedAsync;
 
-            eventsChannel.ExchangeDeclare("events", ExchangeType.Direct, true, false);
-            eventsChannel.QueueDeclare("writer_sourcing");
-            eventsChannel.QueueBind("writer_sourcing", "events", "writer_sourcing");
-            var consumerEvent = new EventingBasicConsumer(eventsChannel);
-            consumerEvent.Received += ConsumerEvent_Received;
+            await eventsChannel.ExchangeDeclareAsync("events", ExchangeType.Direct, true, false);
+            await eventsChannel.QueueDeclareAsync("writer_sourcing", false, false, false, null);
+            await eventsChannel.QueueBindAsync("writer_sourcing", "events", "writer_sourcing");
+            var consumerEvent = new AsyncEventingBasicConsumer(eventsChannel);
+            consumerEvent.ReceivedAsync += ConsumerEvent_ReceivedAsync;
 
-            clientChannel.BasicConsume("client_reader", true, consumerClient);
-            eventsChannel.BasicConsume("writer_sourcing", true, consumerEvent);
+            await clientChannel.BasicConsumeAsync("client_reader", true, consumerClient);
+            await eventsChannel.BasicConsumeAsync("writer_sourcing", true, consumerEvent);
 
             Log.Debug(" [x] Reader is now waiting for incoming calls :)");
         }
 
-        private void ConsumerEvent_Received(object sender, BasicDeliverEventArgs e)
+        private async Task ConsumerEvent_ReceivedAsync(object sender, BasicDeliverEventArgs e)
         {
-            //Log.Info($" [x] Received a new event {e.DeliveryTag} from writer sourcing");
-
-            var message = BaseMessage.Parser.ParseFrom(e.Body);
-            IMessage response = null;
+            Log.Info(" [x] Received consumer event");`
+            var message = BaseMessage.Parser.ParseFrom(e.Body.ToArray());
+            IMessage? response = null;
 
             switch ((MessageType)message.Type)
             {
@@ -84,43 +81,50 @@ namespace BeeGees_ReadNode
                     break;
             }
 
-            SubmitToEventsAggregate("reader_confirmation", response.ToByteArray(), e.BasicProperties.CorrelationId);
-        }
-
-        private void SubmitToClient(string queue, byte[] blob, string id)
-        {
-            using (var connection = connectionFactory.CreateConnection())
-            using (var channel = connection.CreateModel())
+            if (response != null)
             {
-                channel.ExchangeDeclare("client", ExchangeType.Direct, true, false);
-                var props = channel.CreateBasicProperties();
-                props.Persistent = true;
-                props.CorrelationId = id;
-
-                channel.BasicPublish("client", queue, props, blob);
+                await SubmitToEventsAggregateAsync("reader_confirmation", response.ToByteArray(), e.BasicProperties.CorrelationId!);
+            }
+            else
+            {
+                Log.Error($" [x] Cannot process message {Enum.GetName((MessageType)message.Type)}");
             }
         }
 
-        private void SubmitToEventsAggregate(string queue, byte[] blob, string correlationId)
+        private async Task SubmitToClientAsync(string queue, byte[] blob, string id)
         {
-            using (var channel = connection.CreateModel())
-            {
-                var props = channel.CreateBasicProperties();
-                props.Persistent = true;
-                props.CorrelationId = correlationId;
+            using var channel = await connection!.CreateChannelAsync();
 
-                channel.BasicPublish("events", queue, props, blob);
-            }
+            await channel.ExchangeDeclareAsync("client", ExchangeType.Direct, true, false);
+
+            var props = new BasicProperties
+            {
+                Persistent = false,
+                CorrelationId = id
+            };
+
+            await channel.BasicPublishAsync("client", queue, false, props, blob);
         }
 
-        private void Consumer_Received(object sender, BasicDeliverEventArgs e)
+        private async Task SubmitToEventsAggregateAsync(string queue, byte[] blob, string correlationId)
         {
-            //Log.Info($" [x] Received message {e.DeliveryTag} from client");
+            using var channel = await connection!.CreateChannelAsync();
 
-            var message = BaseMessage.Parser.ParseFrom(e.Body);
-            IMessage response = null;
-            
-            switch((MessageType)message.Type)
+            var props = new BasicProperties
+            {
+                Persistent = false,
+                CorrelationId = correlationId
+            };
+
+            await channel.BasicPublishAsync("events", queue, false, props, blob);
+        }
+
+        private async Task Consumer_ReceivedAsync(object sender, BasicDeliverEventArgs e)
+        {
+            var message = BaseMessage.Parser.ParseFrom(e.Body.ToArray());
+            IMessage? response = null;
+
+            switch ((MessageType)message.Type)
             {
                 case MessageType.GetAllShipmentsQuery:
                     {
@@ -132,10 +136,14 @@ namespace BeeGees_ReadNode
                     {
                         var packetMessage = GetShipmentStatusQuery.Parser.ParseFrom(message.Blob);
                         response = (GetShipmentStatusResponse)facade.GenerateHandler(MessageType.GetShipmentStatusQuery).HandleMessage(packetMessage);
-                    }break;
+                    }
+                    break;
             }
 
-            SubmitToClient("reader_client", response.ToByteArray(), e.BasicProperties.CorrelationId);
+            if (response != null)
+            {
+                await SubmitToClientAsync("reader_client", response.ToByteArray(), e.BasicProperties.CorrelationId!);
+            }
         }
     }
 }

@@ -4,6 +4,5 @@ package BeeGees.Commands.Responses;
 
 message ShipmentCreatedResponse {
     string ShipmentId = 1;
-    string CreatedDate = 2;
-    bool Success = 3;
+    bool Success = 2;
 }

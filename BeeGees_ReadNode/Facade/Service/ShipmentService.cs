@@ -38,7 +38,8 @@ namespace BeeGees_ReadNode.Facade.Service
                     {
                         CurrentLocation = x.Location,
                         LastStatusUpdate = x.LastUpdated.Ticks,
-                        ShipmentName = x.ShipmentName
+                        ShipmentName = x.ShipmentName,
+                        ShipmentId = x.ShipmentId.ToString(),
                     }));
                     retval.Success = true;
                 }

@@ -1,17 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Timers;
+﻿using System.Timers;
 
 namespace BeeGees_ReadNode.Facade.FastAccess
 {
     public static class SystemCacheManager
     {
-        private static FastAccess fastAccess;
-        private static Dictionary<string, FastUserStatistics> memory;
+        private static FastAccess? fastAccess;
+        private static Dictionary<string, FastUserStatistics>? memory;
         private static int threshold;
         private static bool autoCleanup;
-        private static Timer timer;
+        private static System.Timers.Timer? timer;
 
         public static void Initialize(int requestsThreshold, bool fastAccessAutoCleanup = false, int fastAccessAutoCleanupInterval = 60000)
         {
@@ -20,7 +17,7 @@ namespace BeeGees_ReadNode.Facade.FastAccess
             memory = new Dictionary<string, FastUserStatistics>();
             threshold = requestsThreshold;
 
-            timer = new Timer(fastAccessAutoCleanupInterval);
+            timer = new System.Timers.Timer(fastAccessAutoCleanupInterval);
             timer.Elapsed += Timer_Elapsed;
 
             timer.Start();

@@ -1,17 +1,19 @@
-using BeeGees_ReadNode.Facade.Entities;
 using Microsoft.EntityFrameworkCore;
+using BeeGees_WriteNode.Facade.Entities;
 
-namespace BeeGees_ReadNode.Facade.Repository
+namespace BeeGees_WriteNode.Facade.Repository
 {
     public class ShipmentContext : DbContext
     {
-        public DbSet<Shipment> Shipments { get; set; }
+        public ShipmentContext()
+        {
+        }
 
-        public ShipmentContext() { }
+        public DbSet<Shipment> Shipments { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-            optionsBuilder.UseNpgsql("Host=localhost;Port=61660;Database=BeeGees_Reader;Username=postgres;Password=postgres");
+            optionsBuilder.UseNpgsql("Host=localhost;Port=61660;Database=BeeGees_Writer;Username=postgres;Password=postgres");
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -20,11 +22,7 @@ namespace BeeGees_ReadNode.Facade.Repository
                 .HasKey(x => x.ShipmentId);
 
             modelBuilder.Entity<Shipment>()
-                .Property(x => x.ShipmentId)
-                .ValueGeneratedNever();
-
-            modelBuilder.Entity<Shipment>()
-                .ToTable("Read_Shipments");
+                .ToTable("Write_Shipments");
 
             base.OnModelCreating(modelBuilder);
         }
