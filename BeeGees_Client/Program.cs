@@ -14,6 +14,7 @@ namespace BeeGees_Client
     {
         static Dictionary<string, Type> inboundTypes = new();
         static Dictionary<string, object> inbound = new();
+        static Dictionary<string, TaskCompletionSource> pendingResponses = new();
 
         static IConnection? connection;
 
@@ -27,7 +28,7 @@ namespace BeeGees_Client
             var props = new BasicProperties
             {
                 CorrelationId = corrId,
-                Persistent = true
+                Persistent = false
             };
 
             var shipment = new CreateShipmentCommand()
@@ -45,6 +46,10 @@ namespace BeeGees_Client
 
             await channel.BasicPublishAsync("writer_exchange", "client_writer", false, props, bmsg.ToByteArray());
             inboundTypes.Add(corrId, typeof(ShipmentCreatedResponse));
+
+            var tcs = new TaskCompletionSource();
+            pendingResponses.Add(corrId, tcs);
+            await tcs.Task;
         }
 
         static async Task UpdateShipmentAsync(string shipId, string location)
@@ -55,7 +60,7 @@ namespace BeeGees_Client
             var props = new BasicProperties
             {
                 CorrelationId = corrId,
-                Persistent = true
+                Persistent = false
             };
 
             var shipment = new UpdateShipmentCommand()
@@ -73,6 +78,10 @@ namespace BeeGees_Client
 
             await channel.BasicPublishAsync("writer_exchange", "client_writer", false, props, bmsg.ToByteArray());
             inboundTypes.Add(corrId, typeof(ShipmentUpdatedResponse));
+
+            var tcs = new TaskCompletionSource();
+            pendingResponses.Add(corrId, tcs);
+            await tcs.Task;
         }
 
         private static async Task AskForShipmentsAsync()
@@ -83,7 +92,7 @@ namespace BeeGees_Client
             var props = new BasicProperties
             {
                 CorrelationId = corrId,
-                Persistent = true
+                Persistent = false
             };
 
             var shipment = new GetAllShipmentsQuery()
@@ -100,6 +109,10 @@ namespace BeeGees_Client
 
             await channel.BasicPublishAsync("reader_exchange", "client_reader", false, props, bmsg.ToByteArray());
             inboundTypes.Add(corrId, typeof(GetAllShipmentsResponse));
+
+            var tcs = new TaskCompletionSource();
+            pendingResponses.Add(corrId, tcs);
+            await tcs.Task;
         }
 
         private static async Task AskForStatusAsync(string shipmentId)
@@ -110,7 +123,7 @@ namespace BeeGees_Client
             var props = new BasicProperties
             {
                 CorrelationId = corrId,
-                Persistent = true
+                Persistent = false
             };
 
             var shipment = new GetShipmentStatusQuery()
@@ -137,7 +150,7 @@ namespace BeeGees_Client
             var props = new BasicProperties
             {
                 CorrelationId = corrId,
-                Persistent = true
+                Persistent = false
             };
 
             var shipment = new MarkShipmentAsDeliveredCommand()
@@ -185,7 +198,10 @@ namespace BeeGees_Client
             readerConsumer.ReceivedAsync += ReaderConsumer_ReceivedAsync;
             await reader_channel.BasicConsumeAsync("reader_client", true, readerConsumer);
 
-            Console.WriteLine("waiting");
+            Console.WriteLine();
+            Console.WriteLine("=== BeeGees Client Ready ===");
+            Console.WriteLine("Commands: get-shipments, update-shipment <id> <location>, exit");
+            Console.WriteLine();
 
             while (true)
             {
@@ -209,11 +225,17 @@ namespace BeeGees_Client
                     return;
                 else if (cmd == "get-shipments")
                 {
-                    for (int i = 0; i < 5; i++)
-                    {
-                        await AskForShipmentsAsync();
-                    }
+                    await AskForShipmentsAsync();
                 }
+            }
+        }
+
+        private static void CleanUpPendingResponse(string correlationId)
+        {
+            if (pendingResponses.ContainsKey(correlationId))
+            {
+                pendingResponses[correlationId].SetResult();
+                pendingResponses.Remove(correlationId);
             }
         }
 
@@ -232,10 +254,15 @@ namespace BeeGees_Client
 
                     if (msg.Success)
                     {
-                        Console.WriteLine($"Got {msg.Shipments.Count} shipments for request {e.BasicProperties.CorrelationId}");
+                        Console.WriteLine();
+                        Console.WriteLine($"Found {msg.Shipments.Count} shipment(s):");
+                        Console.WriteLine();
                         foreach (var s in msg.Shipments)
                         {
-                            Console.WriteLine($"Shipment Name: {s.ShipmentName}{Environment.NewLine}Shipment Location: {s.CurrentLocation}");
+                            Console.WriteLine($"  Shipment Name: {s.ShipmentName}");
+                            Console.WriteLine($"  Location: {s.CurrentLocation}");
+                            Console.WriteLine($"  ID: {s.ShipmentId}");
+                            Console.WriteLine();
                         }
                     }
                     else
@@ -247,17 +274,20 @@ namespace BeeGees_Client
 
                     if (msg.Success)
                     {
-                        Console.WriteLine($"Shipment Name: {msg.ShipmentName}{Environment.NewLine}Shipment Location: {msg.Status}");
+                        Console.WriteLine();
+                        Console.WriteLine($"  Shipment Name: {msg.ShipmentName}");
+                        Console.WriteLine($"  Location: {msg.Status}");
+                        Console.WriteLine();
                     }
                     else
                         Console.WriteLine("Err.. something wrong happened :/");
                 }
             }
 
+            CleanUpPendingResponse(e.BasicProperties.CorrelationId);
+
             return Task.CompletedTask;
         }
-
-        private static int steps = 0;
 
         private static async Task WriterChannel_ReceivedAsync(object sender, BasicDeliverEventArgs e)
         {
@@ -272,7 +302,9 @@ namespace BeeGees_Client
                     var message = ShipmentCreatedResponse.Parser.ParseFrom(e.Body.ToArray());
                     if (message.Success)
                     {
-                        Console.WriteLine($"A new shipment with ID {message.ShipmentId} has been created");
+                        Console.WriteLine();
+                        Console.WriteLine($"✓ Shipment created with ID: {message.ShipmentId}");
+                        Console.WriteLine();
                     }
                     inbound[e.BasicProperties.CorrelationId] = message;
                 }
@@ -281,31 +313,26 @@ namespace BeeGees_Client
                     var message = ShipmentUpdatedResponse.Parser.ParseFrom(e.Body.ToArray());
                     if (message.Success)
                     {
-                        Console.WriteLine($"Shipmet {message.ShipmentName} with ID {message.ShipmentId} has been updated");
+                        Console.WriteLine();
+                        Console.WriteLine($"✓ Shipment '{message.ShipmentName}' (ID: {message.ShipmentId}) has been updated");
+                        Console.WriteLine();
                     }
                     inbound[e.BasicProperties.CorrelationId] = message;
-
-                    if (steps < 5)
-                    {
-                        await AskForStatusAsync(message.ShipmentId);
-                        await UpdateShipmentAsync(message.ShipmentId, "City " + steps.ToString());
-                        steps++;
-                    }
-                    else
-                    {
-                        await MarkAsDeliveredAsync(message.ShipmentId);
-                    }
                 }
                 else if (type == typeof(ShipmentDeliveredResponse))
                 {
                     var message = ShipmentDeliveredResponse.Parser.ParseFrom(e.Body.ToArray());
                     if (message.Success)
                     {
-                        Console.WriteLine($"Shipment {message.ShipmentId} has been delivered");
+                        Console.WriteLine();
+                        Console.WriteLine($"✓ Shipment {message.ShipmentId} has been delivered");
+                        Console.WriteLine();
                     }
                     inbound[e.BasicProperties.CorrelationId] = message;
                 }
             }
+            
+            CleanUpPendingResponse(e.BasicProperties.CorrelationId);
         }
     }
 }

@@ -55,6 +55,7 @@ namespace BeeGees_ReadNode
 
         private async Task ConsumerEvent_ReceivedAsync(object sender, BasicDeliverEventArgs e)
         {
+            Log.Info(" [x] Received consumer event");`
             var message = BaseMessage.Parser.ParseFrom(e.Body.ToArray());
             IMessage? response = null;
 
@@ -84,6 +85,10 @@ namespace BeeGees_ReadNode
             {
                 await SubmitToEventsAggregateAsync("reader_confirmation", response.ToByteArray(), e.BasicProperties.CorrelationId!);
             }
+            else
+            {
+                Log.Error($" [x] Cannot process message {Enum.GetName((MessageType)message.Type)}");
+            }
         }
 
         private async Task SubmitToClientAsync(string queue, byte[] blob, string id)
@@ -94,7 +99,7 @@ namespace BeeGees_ReadNode
 
             var props = new BasicProperties
             {
-                Persistent = true,
+                Persistent = false,
                 CorrelationId = id
             };
 
@@ -107,7 +112,7 @@ namespace BeeGees_ReadNode
 
             var props = new BasicProperties
             {
-                Persistent = true,
+                Persistent = false,
                 CorrelationId = correlationId
             };
 

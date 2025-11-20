@@ -91,7 +91,7 @@ namespace BeeGees_WriteNode
 
             var props = new BasicProperties
             {
-                Persistent = true,
+                Persistent = false,
                 CorrelationId = id
             };
 
@@ -101,12 +101,10 @@ namespace BeeGees_WriteNode
         private async Task SubmitToEventsAggregateAsync(string queue, byte[] blob, string correlationId)
         {
             using var channel = await connection!.CreateChannelAsync();
-            await channel.QueueDeclareAsync(queue, false, false, true);
-            await channel.QueueBindAsync(queue, "events", queue);
 
             var props = new BasicProperties
             {
-                Persistent = true,
+                Persistent = false,
                 CorrelationId = correlationId
             };
 

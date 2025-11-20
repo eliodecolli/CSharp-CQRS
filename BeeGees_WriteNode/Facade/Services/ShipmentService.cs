@@ -17,14 +17,14 @@ namespace BeeGees_WriteNode.Facade.Services
         {
             var retval = new ShipmentCreatedResponse();
 
-            //try
+            try
             {
                 var nShipment = new Shipment()
                 {
                     CurrentLocation = "Base",
                     CurrentStatus = "Package Received",
                     CustomerId = command.CustomerID,
-                    LastUpdated = DateTime.Now,
+                    LastUpdated = DateTime.UtcNow,
                     ShipmentName = command.ShipName,
                     ShipmentAddress = command.ShipAddress,
                     ShipmentId = Guid.NewGuid(),
@@ -34,18 +34,15 @@ namespace BeeGees_WriteNode.Facade.Services
                 nShipment = unitOfWork.ShipmentsRepository.InsertNew(nShipment);
                 unitOfWork.SaveWork();
 
-
-                retval.CreatedDate = DateTime.Now.ToString();
                 retval.ShipmentId = nShipment.ShipmentId.ToString();
                 retval.Success = true;
-                Log.Info($"Created shipment {command.ShipName} on {retval.CreatedDate} en route to {command.ShipAddress}");
+                Log.Info($"Created shipment {command.ShipName} on {nShipment.LastUpdated} en route to {command.ShipAddress}");
             }
-            /*catch(Exception ex)
+            catch(Exception ex)
             {
                 Log.Error($" [x] Something wrong happened while creating a new shipment! {ex.Message}");
                 retval.Success = false;
             }
-            */
             return retval;
         }
 
@@ -65,7 +62,7 @@ namespace BeeGees_WriteNode.Facade.Services
                 {
                     ship.CurrentStatus = command.Status;
                     ship.CurrentLocation = command.Location;
-                    ship.LastUpdated = DateTime.Now;
+                    ship.LastUpdated = DateTime.UtcNow;
 
                     unitOfWork.ShipmentsRepository.Update(ship);
                     unitOfWork.SaveWork();
@@ -96,7 +93,7 @@ namespace BeeGees_WriteNode.Facade.Services
 
                 if (ship != null)
                 {
-                    ship.LastUpdated = DateTime.Now;
+                    ship.LastUpdated = DateTime.UtcNow;
                     ship.CurrentLocation = ship.ShipmentAddress;
                     ship.DeliveredAt = DateTime.FromBinary(command.DeliveredDate);
 
@@ -116,7 +113,7 @@ namespace BeeGees_WriteNode.Facade.Services
             }
             catch (Exception ex)
             {
-                Log.Error($" [x] Something went wrong while marking a shipment as delivered! {ex.Message}");
+                Log.Error($" [x] Something went wrong while marking a shipment as delivered! {ex.Message} - {ex.InnerException?.Message}");
                 retval.Success = false;
             }
 
