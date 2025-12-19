@@ -49,12 +49,12 @@ However, the parameter name MUST match the property name in the class of the que
 
 ## Roadmap
 To bring this project to life, some critical ehnancements are in order:
-1. Bump up the .NET version to the latest one (3.1 -> 10) – This will imply a MAJOR upgrade work, since it also entails upgrading the underlying libraries and tools used.
-2. Rework the way I handle RabbitMQ routing.
+1. ~~Bump up the .NET version to the latest one (3.1 -> 10) – This will imply a MAJOR upgrade work, since it also entails upgrading the underlying libraries and tools used.~~
+2. ~~Rework the way I handle RabbitMQ routing.~~
 3. Probably enhance and refactor along the way components that I feel fall a bit short of their proper implementation.
 4. Cover the code with unit tests.
-5. Migrate away from SQL Server to Postgres.
-6. Add testing to CI.
+5. ~~Migrate away from SQL Server to Postgres.~~
+6. ~~Add testing to CI.~~
 7. If possible, containerize the application using Docker.
 
 
