@@ -2,7 +2,7 @@
 
 # BeeGees - Shipment Tracking System
 
-A practical implementation of the CQRS (Command Query Responsibility Segregation) pattern built with .NET, demonstrating event-driven architecture and eventual consistency through a shipment tracking domain model.
+A practical implementation of the CQRS (Command Query Responsibility Segregation) pattern built with .NET 8.0, demonstrating event-driven architecture and eventual consistency through a shipment tracking domain model.
 
 ## Overview
 
@@ -23,7 +23,6 @@ Responsible for all state-changing operations (commands). The write node:
 - Processes commands: `CreateShipment`, `UpdateShipment`, `MarkShipmentAsDelivered`
 - Maintains the authoritative data store (PostgreSQL)
 - Generates domain events for each state change
-- Implements a "hold-and-confirm" pattern to ensure read node synchronization before responding to clients
 - Uses the Facade pattern to encapsulate business logic
 
 ### 2. **Read Node** (`BeeGees_ReadNode`)
@@ -55,7 +54,7 @@ Shared message contracts using Protocol Buffers:
 
 ## Technical Stack
 
-- **.NET 9.0** - Modern C# with async/await patterns
+- **.NET 8.0** - Modern C# with async/await patterns
 - **RabbitMQ** - Message broker for inter-component communication
 - **Protocol Buffers** - Efficient binary serialization (enables polyglot implementations)
 - **PostgreSQL** - Separate databases for write and read nodes
@@ -67,7 +66,9 @@ Shared message contracts using Protocol Buffers:
 The system implements eventual consistency through an event-driven synchronization mechanism:
 
 ```
-Client → Command → Write Node → Event → Read Node → Confirmation → Write Node → Response → Client
+Client → Command → Write Node → Event → Read Node
+                 ↓
+            Response → Client
 ```
 
 **Detailed Flow:**
@@ -75,20 +76,18 @@ Client → Command → Write Node → Event → Read Node → Confirmation → W
 1. Client publishes a command to the `writer_exchange` with a unique correlation ID
 2. Write node receives the command via the `client_writer` queue
 3. Write node validates and processes the command, updating its database
-4. Write node generates a corresponding event (e.g., `ShipmentCreatedEvent`)
-5. Write node stores the response in memory and publishes the event to the `events` exchange
+4. Write node generates a corresponding event (e.g., `ShipmentCreatedEvent`) and sends response to client
+5. Write node publishes the event to the `events` exchange
 6. Read node consumes the event from the `writer_sourcing` queue
 7. Read node applies changes to its database and invalidates affected cache entries
-8. Read node publishes a `ReaderConfirmation` back to the write node
-9. Write node receives confirmation, retrieves the stored response, and sends it to the client
-10. Client receives the response via the `writer_client` queue using the correlation ID
+8. Client receives the response via the `writer_client` queue using the correlation ID
 
 **Why this approach?**
-- Ensures both databases are synchronized before confirming operations to clients
-- Provides strong consistency guarantees despite using separate data stores
+- Provides fast command responses without waiting for read node synchronization
 - Allows the read node to be optimized independently without affecting write operations
+- Maintains eventual consistency between write and read databases
 
-**Known Limitation:** The current implementation doesn't handle in-flight read queries during event processing, which could theoretically result in stale data being cached momentarily. This is an acceptable trade-off for simplicity in this demonstration.
+**Trade-off:** Read queries immediately after a write may return slightly stale data until the read node processes the event. This is an acceptable trade-off for improved performance.
 
 ## RabbitMQ Topology
 
@@ -167,7 +166,7 @@ Additional filtering is supported through reflection:
 ## Running the Application
 
 ### Prerequisites
-- .NET 9.0 SDK (for local development)
+- .NET 8.0 SDK (for local development)
 - Docker & Docker Compose (for containerized deployment)
 
 ### Option 1: Docker Compose (Recommended)
@@ -267,22 +266,16 @@ The guide includes:
 ## Project Roadmap
 
 **Completed:**
-- ✅ Upgraded from .NET 3.1 to .NET 9.0 with modern language features
+- ✅ Upgraded from .NET 3.1 to .NET 8.0 with modern language features
 - ✅ Reworked RabbitMQ routing with proper exchange topology
 - ✅ Migrated from SQL Server to PostgreSQL
 - ✅ Added CI pipeline with automated testing
 - ✅ Containerized with Docker
+- ✅ Unit tests for write and read nodes
 
 **In Progress:**
-- 🔄 Expand unit test coverage across all components
-- 🔄 Refactor and enhance core components based on production learnings
-
-**Planned:**
-- 📋 Implement distributed tracing (OpenTelemetry)
-- 📋 Add health check endpoints
-- 📋 Performance benchmarking suite
-- 📋 Kubernetes deployment manifests
-- 📋 Implement saga pattern for complex transactions
+- 🔄 Complete UI/API implementation
+- 🔄 Containerize UI/API components
 
 ## Design Decisions
 
@@ -292,8 +285,8 @@ The original vision was to implement each node in a different language (e.g., wr
 ### Why Separate Databases?
 CQRS emphasizes separation of concerns. The write database is normalized for transactional integrity, while the read database can be denormalized for query performance. This allows independent scaling and optimization strategies.
 
-### Why Hold-and-Confirm Pattern?
-Although it introduces latency, this pattern provides strong consistency guarantees. Clients receive confirmation only after both databases are synchronized, preventing scenarios where a write succeeds but reads immediately return stale data.
+### Why Eventual Consistency?
+The system favors performance and availability over immediate consistency. Commands return quickly after the write node processes them, while the read node catches up asynchronously. This design allows for better scalability and responsiveness.
 
 ## Contributing
 
