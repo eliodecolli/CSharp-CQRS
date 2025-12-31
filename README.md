@@ -251,18 +251,6 @@ cd src
 dotnet test
 ```
 
-## Integration Guide
-
-For detailed information on integrating with this system (building a web backend, REST API, or UI), see [FULLSTACK_INTEGRATION_GUIDE.md](FULLSTACK_INTEGRATION_GUIDE.md).
-
-The guide includes:
-- Complete RabbitMQ setup instructions
-- Protocol Buffer message schemas
-- Request/response correlation patterns
-- Code examples in C#
-- REST API design recommendations
-- Frontend UI suggestions
-
 ## Project Roadmap
 
 **Completed:**
