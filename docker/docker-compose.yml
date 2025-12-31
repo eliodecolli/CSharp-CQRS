@@ -12,6 +12,7 @@ services:
       - "61660:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+      - ./init-db.sql:/docker-entrypoint-initdb.d/init-db.sql
     networks:
       - bee-gees
     healthcheck:
@@ -37,6 +38,52 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+
+  write-node:
+    build:
+      context: ../src
+      dockerfile: BeeGees_WriteNode/Dockerfile
+    container_name: beegees-write-node
+    environment:
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: BeeGees_Writer
+      DB_USER: postgres
+      DB_PASSWORD: postgres
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_PORT: 5672
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      - bee-gees
+    restart: unless-stopped
+
+  read-node:
+    build:
+      context: ../src
+      dockerfile: BeeGees_ReadNode/Dockerfile
+    container_name: beegees-read-node
+    environment:
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: BeeGees_Reader
+      DB_USER: postgres
+      DB_PASSWORD: postgres
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_PORT: 5672
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      write-node:
+        condition: service_started
+    networks:
+      - bee-gees
+    restart: unless-stopped
 
 networks:
   bee-gees:

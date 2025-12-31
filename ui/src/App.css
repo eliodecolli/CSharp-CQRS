@@ -1,0 +1,33 @@
+/* BeeGees Shipment Tracking App Styles */
+
+#root {
+  height: 100%;
+}
+
+/* Ensure sticky footer */
+html, body {
+  height: 100%;
+}
+
+/* Custom styling for cards */
+.card {
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s;
+}
+
+.card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+/* Badge styling */
+.badge {
+  font-weight: 600;
+}
+
+/* Table responsiveness */
+@media (max-width: 768px) {
+  .table-responsive {
+    font-size: 0.875rem;
+  }
+}

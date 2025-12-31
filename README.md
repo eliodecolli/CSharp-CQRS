@@ -1,60 +1,313 @@
 ![DOTNET CI](https://github.com/eliodecolli/CSharp-CQRS/actions/workflows/dotnet.yml/badge.svg)
 
-# CSharp-CQRS
- A basic CQRS implementation, with a similiar approach to that of microservices.
-## Summary
-The project is divided into three main components:
+# BeeGees - Shipment Tracking System
 
- 1. A writer node, which accepts and executes commands.
- 2. A reader node, which accepts and executes queries.
- 3. A client, which acts as an initial interface to contact the other two components.
+A practical implementation of the CQRS (Command Query Responsibility Segregation) pattern built with .NET, demonstrating event-driven architecture and eventual consistency through a shipment tracking domain model.
 
-The writer and reader nodes are both implemented using a Facade, while the client is a simple console application.
+## Overview
 
-RabbitMQ is used to exchange messages across the components above. To serialize the messages I chose to go for Protobuffers (as the initial idea was that each component would be written in a different language, protobufs made more sense to me).
-I made my implementation of an in-memory cache, which can be navigated using a "special" form of query which I called Cached Query String (CQS). It's just a "map" of the path that the instance must follow across multiple dictionaries to access a specific request.
+This project implements a distributed shipment tracking system where write and read operations are handled by separate, specialized nodes. The architecture follows CQRS principles with event sourcing to maintain data consistency across independent databases.
 
-The initial commit contains a code which is far from being well documented, but my goal is to fix that and perhaps improve the actual implementation in general.
+**Core Capabilities:**
+- Create and manage shipments with delivery tracking
+- Update shipment status and location in real-time
+- Query shipment information with intelligent caching
+- Maintain eventual consistency through event-driven synchronization
 
-## Synchronization between Write-Read nodes
+## Architecture
 
-Each node has its own database, therefore to keep the data up-to-date, I tried to implement an event-oriented pattern, and let RabbitMQ act as persistence for published events.
-The application flow goes as follows:
+The system consists of three primary components that communicate via RabbitMQ message queues:
 
- 1. The client publishes a command to the writer's queue.
- 2. The message is then routed to the writer which makes the necessary updates to its database.
- 3. Based on the command being sent (CQRS favors this kind of approach), the writer generates a specific event with the data needed by the reader to apply the same changes.
- 4. The writer publishes the event in a queue for events only.
- 5. The reader, being subscribed to the events queue, reads any new event and updates its database accordingly.
- 6. The reader publishes a message to the writer telling it that their databases are now in-sync.
- 7. The writer after confirmation from the reader signals the client that its command has been completed.
+### 1. **Write Node** (`BeeGees_WriteNode`)
+Responsible for all state-changing operations (commands). The write node:
+- Processes commands: `CreateShipment`, `UpdateShipment`, `MarkShipmentAsDelivered`
+- Maintains the authoritative data store (PostgreSQL)
+- Generates domain events for each state change
+- Implements a "hold-and-confirm" pattern to ensure read node synchronization before responding to clients
+- Uses the Facade pattern to encapsulate business logic
 
-In step 5, we don't wait for any pending reads to complete, nor do we consider them at all, which is a flaw per se. Yet I wanted to keep this as simple as possible, and implementing a whole saga would be a little bit of an overkill. Perhaps in later updates, I might fix this. :)
+### 2. **Read Node** (`BeeGees_ReadNode`)
+Handles all read operations (queries) with performance optimizations. The read node:
+- Processes queries: `GetAllShipments`, `GetShipmentStatus`
+- Maintains a denormalized read model (PostgreSQL)
+- Implements a custom in-memory caching system with smart invalidation
+- Consumes events from the write node to stay synchronized
+- Provides fast query responses through cached data structures
 
-## In-memory cache
-If a client submits the same query multiple times to the reader then, a better approach would be to store the results of the said query in memory for faster access.
+### 3. **Client** (`BeeGees_Client`)
+A console application demonstrating integration with both nodes:
+- Sends commands to the write node
+- Queries data from the read node
+- Manages correlation IDs for request/response matching
+- Serves as a reference implementation for external integrations
 
-For instance, a client might submit numerous GetShipments queries to refresh or update the user interface. In that case, accessing the database for each call made by that client is quite inefficient, so instead, we store the result of that query in memory.
-However, if a client submits a command changing the status of a specific shipment then once the reader receives the event, it checks whether we have an item in memory that might be affected by the update. In that case, to prevent dirty reads we remove said item from the cache.
+### 4. **Messaging** (`BeeGees_Messaging`)
+Shared message contracts using Protocol Buffers:
+- Command definitions (CreateShipmentCommand, UpdateShipmentCommand, etc.)
+- Query definitions (GetAllShipmentsQuery, GetShipmentStatusQuery, etc.)
+- Event definitions (ShipmentCreatedEvent, ShipmentUpdatedEvent, etc.)
+- Response messages for all operations
+- Base message envelope for type routing
 
-The location of the item, or how to store it can be thought of as a map:
-START/{SENDER}/{QUERY_TYPE}/{PARAM_NAME}={PARAM_VALUE}/.../..../END
+### 5. **Test Projects**
+- `BeeGees_WriteNode.Tests` - Unit tests for write node operations
+- `BeeGees_ReadNode.Tests` - Unit tests for read node operations and cache behavior
 
-Instead of a specific sender, we can use "*" to indicate that we don't care where this request is coming from. This is particularly useful in cases where a user wants to check their shipments from multiple sources, in which case (as shown in the code), we simply store the item with the following query details:
-*QUERY_TYPE=GetShipments* & *[PARAM_NAME=CustomerId]=CustomerId*
+## Technical Stack
 
-Reflection is used to match additional details about an item, for instance, we would like to access every shipment with a price of $10, in which case we simply add a new parameter:
-START/{SENDER}/GetShipments/CustomerId={ID}/Price=10/END
-However, the parameter name MUST match the property name in the class of the query, for instance, if the *GetShipments* query contains items of type *Shipment* then *Shipment* must have a property named Price (and also CustomerId).
+- **.NET 9.0** - Modern C# with async/await patterns
+- **RabbitMQ** - Message broker for inter-component communication
+- **Protocol Buffers** - Efficient binary serialization (enables polyglot implementations)
+- **PostgreSQL** - Separate databases for write and read nodes
+- **Entity Framework Core** - Data access and migrations
+- **Docker** - Containerization for deployment
 
-## Roadmap
-To bring this project to life, some critical ehnancements are in order:
-1. ~~Bump up the .NET version to the latest one (3.1 -> 10) – This will imply a MAJOR upgrade work, since it also entails upgrading the underlying libraries and tools used.~~
-2. ~~Rework the way I handle RabbitMQ routing.~~
-3. Probably enhance and refactor along the way components that I feel fall a bit short of their proper implementation.
-4. Cover the code with unit tests.
-5. ~~Migrate away from SQL Server to Postgres.~~
-6. ~~Add testing to CI.~~
-7. If possible, containerize the application using Docker.
+## Message Flow & Synchronization
 
+The system implements eventual consistency through an event-driven synchronization mechanism:
 
+```
+Client → Command → Write Node → Event → Read Node → Confirmation → Write Node → Response → Client
+```
+
+**Detailed Flow:**
+
+1. Client publishes a command to the `writer_exchange` with a unique correlation ID
+2. Write node receives the command via the `client_writer` queue
+3. Write node validates and processes the command, updating its database
+4. Write node generates a corresponding event (e.g., `ShipmentCreatedEvent`)
+5. Write node stores the response in memory and publishes the event to the `events` exchange
+6. Read node consumes the event from the `writer_sourcing` queue
+7. Read node applies changes to its database and invalidates affected cache entries
+8. Read node publishes a `ReaderConfirmation` back to the write node
+9. Write node receives confirmation, retrieves the stored response, and sends it to the client
+10. Client receives the response via the `writer_client` queue using the correlation ID
+
+**Why this approach?**
+- Ensures both databases are synchronized before confirming operations to clients
+- Provides strong consistency guarantees despite using separate data stores
+- Allows the read node to be optimized independently without affecting write operations
+
+**Known Limitation:** The current implementation doesn't handle in-flight read queries during event processing, which could theoretically result in stale data being cached momentarily. This is an acceptable trade-off for simplicity in this demonstration.
+
+## RabbitMQ Topology
+
+### Exchanges
+- `writer_exchange` (Direct) - Routes commands to write node
+- `reader_exchange` (Direct) - Routes queries to read node
+- `events` (Direct) - Routes events between nodes
+- `client` (Direct) - Routes responses back to clients
+
+### Queues & Routing
+| Queue | Bound To | Routing Key | Purpose |
+|-------|----------|-------------|---------|
+| `client_writer` | writer_exchange | client_writer | Receives commands from clients |
+| `client_reader` | reader_exchange | client_reader | Receives queries from clients |
+| `writer_sourcing` | events | writer_sourcing | Delivers events to read node |
+| `reader_confirmation` | events | reader_confirmation | Delivers confirmations to write node |
+| `writer_client` | client | writer_client | Delivers command responses to clients |
+| `reader_client` | client | reader_client | Delivers query responses to clients |
+
+### Message Types
+All messages are wrapped in a `BaseMessage` envelope containing:
+- `Type` (int) - Message type identifier
+- `Blob` (bytes) - Serialized Protocol Buffer payload
+
+**Supported Message Types:**
+1. `CreateNewShipment` - Create a new shipment
+2. `UpdateShipment` - Update shipment location and status
+3. `MarkShipmentAsDelivered` - Mark shipment as delivered
+4. `ShipmentCreatedEvent` - Event: shipment was created
+5. `ShipmentUpdatedEvent` - Event: shipment was updated
+6. `ShipmentDeliveredEvent` - Event: shipment was delivered
+7. `GetAllShipmentsQuery` - Query: get all shipments for a customer
+8. `GetShipmentStatusQuery` - Query: get specific shipment status
+
+## Intelligent In-Memory Caching
+
+The read node implements a custom caching system to minimize database hits for repeated queries.
+
+### Cache Navigation Strategy
+
+Cached items are stored using a hierarchical path structure called **Cached Query String (CQS)**:
+
+```
+{SENDER}/{QUERY_TYPE}/{PARAM_NAME}={PARAM_VALUE}/{PARAM_NAME}={PARAM_VALUE}/...
+```
+
+**Example:**
+```
+backend-api/GetAllShipmentsQuery/CustomerId=12345
+```
+
+**Wildcard Support:**
+Using `*` as the sender allows cache hits regardless of the requesting client:
+```
+*/GetAllShipmentsQuery/CustomerId=12345
+```
+
+### Cache Invalidation
+
+When the read node receives an event that modifies data, it automatically invalidates affected cache entries:
+- `ShipmentUpdatedEvent` → Invalidates cached queries containing that shipment
+- `ShipmentDeliveredEvent` → Invalidates cached queries for that customer and shipment
+- Uses reflection to match event properties against cached query parameters
+
+This prevents dirty reads while maximizing cache hit rates for unchanged data.
+
+### Parameter Matching
+
+Additional filtering is supported through reflection:
+```
+*/GetAllShipmentsQuery/CustomerId=12345/Status=InTransit
+```
+
+**Requirement:** Parameter names must match property names on the query result entities. For example, if querying `Shipment` objects, valid parameters include `ShipmentId`, `Status`, `CurrentLocation`, etc.
+
+## Running the Application
+
+### Prerequisites
+- .NET 9.0 SDK (for local development)
+- Docker & Docker Compose (for containerized deployment)
+
+### Option 1: Docker Compose (Recommended)
+
+Run the entire stack with a single command:
+
+```bash
+cd docker
+docker-compose up --build
+```
+
+This starts:
+- PostgreSQL (port 61660)
+- RabbitMQ (port 62660)
+- Write Node (containerized)
+- Read Node (containerized)
+
+The nodes will automatically run migrations and start processing messages.
+
+**Run the client to interact with the system:**
+```bash
+cd src/BeeGees_Client
+dotnet run
+```
+
+**View logs:**
+```bash
+# All services
+docker-compose logs -f
+
+# Specific service
+docker-compose logs -f write-node
+docker-compose logs -f read-node
+```
+
+**Stop the stack:**
+```bash
+docker-compose down
+```
+
+### Option 2: Local Development
+
+Run nodes locally for development and debugging:
+
+1. **Start infrastructure only:**
+   ```bash
+   cd docker
+   docker-compose up -d postgres rabbitmq
+   ```
+
+2. **Run database migrations:**
+   ```bash
+   cd src/BeeGees_WriteNode
+   dotnet ef database update
+
+   cd ../BeeGees_ReadNode
+   dotnet ef database update
+   ```
+
+3. **Start the write node:**
+   ```bash
+   cd src/BeeGees_WriteNode
+   dotnet run
+   ```
+
+4. **Start the read node (in a new terminal):**
+   ```bash
+   cd src/BeeGees_ReadNode
+   dotnet run
+   ```
+
+5. **Run the client (in a new terminal):**
+   ```bash
+   cd src/BeeGees_Client
+   dotnet run
+   ```
+
+### Running Tests
+
+```bash
+cd src
+dotnet test
+```
+
+## Integration Guide
+
+For detailed information on integrating with this system (building a web backend, REST API, or UI), see [FULLSTACK_INTEGRATION_GUIDE.md](FULLSTACK_INTEGRATION_GUIDE.md).
+
+The guide includes:
+- Complete RabbitMQ setup instructions
+- Protocol Buffer message schemas
+- Request/response correlation patterns
+- Code examples in C#
+- REST API design recommendations
+- Frontend UI suggestions
+
+## Project Roadmap
+
+**Completed:**
+- ✅ Upgraded from .NET 3.1 to .NET 9.0 with modern language features
+- ✅ Reworked RabbitMQ routing with proper exchange topology
+- ✅ Migrated from SQL Server to PostgreSQL
+- ✅ Added CI pipeline with automated testing
+- ✅ Containerized with Docker
+
+**In Progress:**
+- 🔄 Expand unit test coverage across all components
+- 🔄 Refactor and enhance core components based on production learnings
+
+**Planned:**
+- 📋 Implement distributed tracing (OpenTelemetry)
+- 📋 Add health check endpoints
+- 📋 Performance benchmarking suite
+- 📋 Kubernetes deployment manifests
+- 📋 Implement saga pattern for complex transactions
+
+## Design Decisions
+
+### Why Protocol Buffers?
+The original vision was to implement each node in a different language (e.g., write node in C#, read node in Go). Protocol Buffers provide language-agnostic serialization, making this architecture truly polyglot-ready.
+
+### Why Separate Databases?
+CQRS emphasizes separation of concerns. The write database is normalized for transactional integrity, while the read database can be denormalized for query performance. This allows independent scaling and optimization strategies.
+
+### Why Hold-and-Confirm Pattern?
+Although it introduces latency, this pattern provides strong consistency guarantees. Clients receive confirmation only after both databases are synchronized, preventing scenarios where a write succeeds but reads immediately return stale data.
+
+## Contributing
+
+Contributions are welcome! Areas of particular interest:
+- Enhanced error handling and resilience patterns
+- Performance optimizations for cache invalidation
+- Additional query types and projections
+- Frontend implementations (React, Angular, Vue)
+- Alternative language implementations of nodes
+
+## License
+
+This project is provided as-is for educational and demonstration purposes.
+
+## Acknowledgments
+
+Built to explore CQRS, event sourcing, and distributed systems architecture in a practical domain context.
