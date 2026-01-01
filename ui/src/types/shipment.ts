@@ -26,6 +26,7 @@ export interface ShipmentResponse {
   shipment_name: string;
   current_location: string;
   last_status_update: string; // ISO datetime string
+  status: string;
 }
 
 export interface CreateShipmentResponse {

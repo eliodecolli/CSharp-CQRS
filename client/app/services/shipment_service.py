@@ -173,6 +173,7 @@ class ShipmentService:
                     last_status_update=self._dotnet_binary_to_datetime(
                         proto_shipment.LastStatusUpdate
                     ),
+                    status=proto_shipment.Status,
                 )
             )
 
