@@ -34,7 +34,20 @@ const ShipmentDetail = () => {
 
   // Deliver modal
   const [showDeliverModal, setShowDeliverModal] = useState(false);
+
+  // Helper function to get current datetime in local format for datetime-local input
+  const getCurrentDateTimeLocal = () => {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const day = String(now.getDate()).padStart(2, '0');
+    const hours = String(now.getHours()).padStart(2, '0');
+    const minutes = String(now.getMinutes()).padStart(2, '0');
+    return `${year}-${month}-${day}T${hours}:${minutes}`;
+  };
+
   const [deliverData, setDeliverData] = useState<MarkShipmentDeliveredRequest>({
+    delivered_date: getCurrentDateTimeLocal(),
     additional_taxes: 0,
   });
   const [delivering, setDelivering] = useState(false);
@@ -77,9 +90,23 @@ const ShipmentDetail = () => {
       if (response.success) {
         setSuccessMessage('Shipment location updated successfully!');
         setShowUpdateForm(false);
+
+        // Immediately update local state to reflect new status
+        if (shipment) {
+          setShipment({
+            ...shipment,
+            status: updateData.status,
+            last_updated: new Date().toISOString(),
+          });
+        }
+
         setUpdateData({ location: '', status: '' });
-        // Refresh shipment data
-        await loadShipmentStatus();
+
+        // Also refresh from server to ensure consistency
+        setTimeout(async () => {
+          await loadShipmentStatus();
+        }, 500);
+
         setTimeout(() => setSuccessMessage(null), 3000);
       } else {
         setError('Failed to update shipment');
@@ -103,9 +130,22 @@ const ShipmentDetail = () => {
       if (response.success) {
         setSuccessMessage('Shipment marked as delivered successfully!');
         setShowDeliverModal(false);
-        setDeliverData({ additional_taxes: 0 });
-        // Refresh shipment data
-        await loadShipmentStatus();
+        setDeliverData({ delivered_date: getCurrentDateTimeLocal(), additional_taxes: 0 });
+
+        // Immediately update local state to reflect delivered status
+        if (shipment) {
+          setShipment({
+            ...shipment,
+            status: 'Delivered',
+            last_updated: new Date().toISOString(),
+          });
+        }
+
+        // Also refresh from server to ensure consistency
+        setTimeout(async () => {
+          await loadShipmentStatus();
+        }, 500);
+
         setTimeout(() => setSuccessMessage(null), 3000);
       } else {
         setError('Failed to mark shipment as delivered');
@@ -197,7 +237,9 @@ const ShipmentDetail = () => {
                       <strong>Current Status:</strong>
                     </Col>
                     <Col md={8}>
-                      <Badge bg="info">{shipment.status}</Badge>
+                      <Badge bg={shipment.status === 'Delivered' ? 'success' : 'info'}>
+                        {shipment.status}
+                      </Badge>
                     </Col>
                   </Row>
                   <Row className="mb-3">
@@ -214,7 +256,13 @@ const ShipmentDetail = () => {
                   <h5 className="mb-0">Update Shipment Location</h5>
                 </Card.Header>
                 <Card.Body>
-                  {!showUpdateForm ? (
+                  {shipment.status === 'Delivered' ? (
+                    <Alert variant="info" className="mb-0">
+                      <strong>Updates Disabled</strong>
+                      <br />
+                      This shipment has been delivered and can no longer be updated.
+                    </Alert>
+                  ) : !showUpdateForm ? (
                     <Button variant="primary" onClick={() => setShowUpdateForm(true)}>
                       Update Location & Status
                     </Button>
@@ -289,16 +337,26 @@ const ShipmentDetail = () => {
                   <h5 className="mb-0">Delivery Actions</h5>
                 </Card.Header>
                 <Card.Body>
-                  <p className="text-muted mb-3">
-                    Mark this shipment as delivered when it reaches its destination.
-                  </p>
-                  <Button
-                    variant="success"
-                    className="w-100"
-                    onClick={() => setShowDeliverModal(true)}
-                  >
-                    Mark as Delivered
-                  </Button>
+                  {shipment.status === 'Delivered' ? (
+                    <Alert variant="success" className="mb-0">
+                      <strong>Shipment Delivered!</strong>
+                      <br />
+                      This shipment has already been marked as delivered.
+                    </Alert>
+                  ) : (
+                    <>
+                      <p className="text-muted mb-3">
+                        Mark this shipment as delivered when it reaches its destination.
+                      </p>
+                      <Button
+                        variant="success"
+                        className="w-100"
+                        onClick={() => setShowDeliverModal(true)}
+                      >
+                        Mark as Delivered
+                      </Button>
+                    </>
+                  )}
                 </Card.Body>
               </Card>
 
@@ -324,7 +382,13 @@ const ShipmentDetail = () => {
       )}
 
       {/* Mark as Delivered Modal */}
-      <Modal show={showDeliverModal} onHide={() => setShowDeliverModal(false)}>
+      <Modal
+        show={showDeliverModal}
+        onHide={() => {
+          setShowDeliverModal(false);
+          setDeliverData({ delivered_date: getCurrentDateTimeLocal(), additional_taxes: 0 });
+        }}
+      >
         <Modal.Header closeButton>
           <Modal.Title>Mark Shipment as Delivered</Modal.Title>
         </Modal.Header>
@@ -369,7 +433,10 @@ const ShipmentDetail = () => {
           <Modal.Footer>
             <Button
               variant="secondary"
-              onClick={() => setShowDeliverModal(false)}
+              onClick={() => {
+                setShowDeliverModal(false);
+                setDeliverData({ delivered_date: getCurrentDateTimeLocal(), additional_taxes: 0 });
+              }}
               disabled={delivering}
             >
               Cancel

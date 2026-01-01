@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Container, Row, Col, Card, Table, Button, Alert, Spinner, Form } from 'react-bootstrap';
+import { Container, Row, Col, Card, Table, Button, Alert, Spinner, Form, Badge } from 'react-bootstrap';
 import { shipmentApi } from '../services/api';
 import type { ShipmentResponse } from '../types/shipment';
 import CreateShipmentModal from '../components/CreateShipmentModal';
@@ -112,6 +112,7 @@ const Dashboard = () => {
                     <th>Shipment ID</th>
                     <th>Name</th>
                     <th>Current Location</th>
+                    <th>Status</th>
                     <th>Last Update</th>
                     <th>Actions</th>
                   </tr>
@@ -124,6 +125,11 @@ const Dashboard = () => {
                       </td>
                       <td>{shipment.shipment_name}</td>
                       <td>{shipment.current_location}</td>
+                      <td>
+                        <Badge bg={shipment.status === 'Delivered' ? 'success' : 'info'}>
+                          {shipment.status}
+                        </Badge>
+                      </td>
                       <td>{formatDateTime(shipment.last_status_update)}</td>
                       <td>
                         <Link to={`/shipment/${shipment.shipment_id}`}>

@@ -40,6 +40,7 @@ namespace BeeGees_ReadNode.Facade.Service
                         LastStatusUpdate = x.LastUpdated.Ticks,
                         ShipmentName = x.ShipmentName,
                         ShipmentId = x.ShipmentId.ToString(),
+                        Status = x.Status,
                     }));
                     retval.Success = true;
                 }

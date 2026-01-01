@@ -63,6 +63,7 @@ class ShipmentResponse(BaseModel):
     shipment_name: str = Field(..., description="Name/description of the shipment")
     current_location: str = Field(..., description="Current location")
     last_status_update: datetime = Field(..., description="Last update timestamp")
+    status: str = Field(..., description="Current status of the shipment")
 
     class Config:
         json_schema_extra = {
@@ -71,6 +72,7 @@ class ShipmentResponse(BaseModel):
                 "shipment_name": "Electronics Package",
                 "current_location": "Distribution Center - Chicago",
                 "last_status_update": "2025-01-15T14:30:00",
+                "status": "In transit",
             }
         }
 
