@@ -40,7 +40,24 @@ A console application demonstrating integration with both nodes:
 - Manages correlation IDs for request/response matching
 - Serves as a reference implementation for external integrations
 
-### 4. **Messaging** (`BeeGees_Messaging`)
+### 4. **API Backend** (`client/`)
+FastAPI-based REST API providing HTTP access to the system:
+- Exposes RESTful endpoints for shipment management
+- Translates HTTP requests to Protocol Buffer commands/queries
+- Communicates with Write and Read nodes via RabbitMQ
+- Provides OpenAPI documentation at `/docs`
+- Built with Python 3.11 and FastAPI
+
+### 5. **Web UI** (`ui/`)
+Modern React-based web interface:
+- Dashboard for viewing all shipments
+- Real-time shipment status tracking
+- Delivery management with status indicators
+- Color-coded status badges (green for delivered)
+- Responsive design with React Bootstrap
+- Built with Vite, React 18, and TypeScript
+
+### 6. **Messaging** (`BeeGees_Messaging`)
 Shared message contracts using Protocol Buffers:
 - Command definitions (CreateShipmentCommand, UpdateShipmentCommand, etc.)
 - Query definitions (GetAllShipmentsQuery, GetShipmentStatusQuery, etc.)
@@ -48,18 +65,31 @@ Shared message contracts using Protocol Buffers:
 - Response messages for all operations
 - Base message envelope for type routing
 
-### 5. **Test Projects**
+### 7. **Test Projects**
 - `BeeGees_WriteNode.Tests` - Unit tests for write node operations
 - `BeeGees_ReadNode.Tests` - Unit tests for read node operations and cache behavior
 
 ## Technical Stack
 
+**Backend:**
 - **.NET 8.0** - Modern C# with async/await patterns
+- **Python 3.11** - FastAPI backend for REST API
 - **RabbitMQ** - Message broker for inter-component communication
 - **Protocol Buffers** - Efficient binary serialization (enables polyglot implementations)
 - **PostgreSQL** - Separate databases for write and read nodes
 - **Entity Framework Core** - Data access and migrations
-- **Docker** - Containerization for deployment
+
+**Frontend:**
+- **React 18** - Modern UI library with hooks
+- **TypeScript** - Type-safe JavaScript
+- **Vite** - Fast build tool and dev server
+- **React Bootstrap** - UI component library
+- **React Router** - Client-side routing
+
+**DevOps:**
+- **Docker** - Containerization for all services
+- **Docker Compose** - Multi-container orchestration
+- **Nginx** - Static file serving for production UI
 
 ## Message Flow & Synchronization
 
@@ -183,10 +213,17 @@ This starts:
 - RabbitMQ (port 62660)
 - Write Node (containerized)
 - Read Node (containerized)
+- FastAPI Backend (port 8000)
+- React UI (port 3000)
 
 The nodes will automatically run migrations and start processing messages.
 
-**Run the client to interact with the system:**
+**Access the application:**
+- **Web UI**: http://localhost:3000
+- **API**: http://localhost:8000
+- **API Docs**: http://localhost:8000/docs
+
+**Run the .NET client to interact with the system:**
 ```bash
 cd src/BeeGees_Client
 dotnet run
@@ -200,6 +237,8 @@ docker-compose logs -f
 # Specific service
 docker-compose logs -f write-node
 docker-compose logs -f read-node
+docker-compose logs -f api
+docker-compose logs -f ui
 ```
 
 **Stop the stack:**
