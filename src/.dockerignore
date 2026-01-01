@@ -1,0 +1,14 @@
+**/bin/
+**/obj/
+**/.vs/
+**/.vscode/
+**/node_modules/
+**/*.user
+**/*.suo
+**/*.log
+**/.git/
+**/.gitignore
+**/README.md
+**/Dockerfile
+**/.dockerignore
+**/docker-compose*.yml
