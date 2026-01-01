@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useParams, useNavigate, Link } from 'react-router-dom';
+import { useParams, Link } from 'react-router-dom';
 import {
   Container,
   Row,
@@ -17,7 +17,6 @@ import type { GetShipmentStatusResponse, UpdateShipmentLocationRequest, MarkShip
 
 const ShipmentDetail = () => {
   const { id } = useParams<{ id: string }>();
-  const navigate = useNavigate();
 
   const [shipment, setShipment] = useState<GetShipmentStatusResponse | null>(null);
   const [loading, setLoading] = useState(true);

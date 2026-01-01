@@ -19,6 +19,9 @@ COPY src/BeeGees_Messaging /proto_source/BeeGees_Messaging
 # Copy proto generation script
 COPY client/generate_proto.py .
 
+# Create app directory for proto generation
+RUN mkdir -p ./app
+
 # Generate protobuf Python files
 RUN python generate_proto.py
 

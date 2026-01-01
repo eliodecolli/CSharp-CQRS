@@ -85,6 +85,46 @@ services:
       - bee-gees
     restart: unless-stopped
 
+  api:
+    build:
+      context: ..
+      dockerfile: client/Dockerfile
+    container_name: beegees-api
+    ports:
+      - "8000:8000"
+    environment:
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_PORT: 5672
+      RABBITMQ_USER: guest
+      RABBITMQ_PASSWORD: guest
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      write-node:
+        condition: service_started
+      read-node:
+        condition: service_started
+    networks:
+      - bee-gees
+    restart: unless-stopped
+
+  ui:
+    build:
+      context: ../ui
+      dockerfile: Dockerfile
+    container_name: beegees-ui
+    ports:
+      - "3000:80"
+    environment:
+      VITE_API_BASE_URL: http://localhost:8000
+    depends_on:
+      - api
+    networks:
+      - bee-gees
+    restart: unless-stopped
+
 networks:
   bee-gees:
 
