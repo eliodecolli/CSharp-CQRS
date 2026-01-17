@@ -15,10 +15,6 @@ This diagram focuses on the **core CQRS implementation** - the Read/Write nodes,
 
 ```mermaid
 graph TB
-    subgraph "Client"
-        CLI[.NET Console Client<br/>BeeGees_Client<br/>Protocol Buffers]
-    end
-
     subgraph "Message Broker - RabbitMQ :62660"
         subgraph "Exchanges"
             WE[writer_exchange<br/>Direct]
@@ -62,9 +58,6 @@ graph TB
         RT[ReadNode.Tests<br/>xUnit]
     end
 
-    %% Client connections
-    CLI -->|Commands<br/>Queries| RMQ
-
     %% Exchange to Queue bindings
     WE --> CW
     RE --> CR
@@ -86,20 +79,14 @@ graph TB
     %% Event Sourcing - Eventual Consistency
     WS -->|Event<br/>Propagation| RN
 
-    %% Response delivery
-    WC -->|Command<br/>Response| CLI
-    RQC -->|Query<br/>Response| CLI
-
     %% Shared dependencies
     WN -.->|uses| MSG
     RN -.->|uses| MSG
-    CLI -.->|uses| MSG
 
     %% Test dependencies
     WT -.->|tests| WN
     RT -.->|tests| RN
 
-    style CLI fill:#512bd4,stroke:#333,stroke-width:3px
     style WN fill:#512bd4,stroke:#333,stroke-width:3px
     style RN fill:#512bd4,stroke:#333,stroke-width:3px
     style RMQ fill:#ff6600,stroke:#333,stroke-width:2px
@@ -146,7 +133,7 @@ graph TB
     style BROWSER fill:#f0f0f0,stroke:#333,stroke-width:2px
     style UI fill:#0d6efd,stroke:#333,stroke-width:2px,color:#fff
     style API fill:#009688,stroke:#333,stroke-width:2px,color:#fff
-    style BACKEND fill:#e0e0e0,stroke:#333,stroke-width:4px,stroke-dasharray: 5 5
+    style BACKEND fill:#6c757d,stroke:#333,stroke-width:4px,stroke-dasharray: 5 5,color:#fff
 ```
 
 ### Demo Architecture Notes
