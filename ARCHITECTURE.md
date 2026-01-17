@@ -54,7 +54,7 @@ graph TB
     end
 
     subgraph "Shared Contract"
-        MSG[BeeGees_Messaging<br/>Protocol Buffers v3<br/><br/>Commands | Queries | Events<br/>Language-Agnostic]
+        MSG[BeeGees_Messaging<br/>Protocol Buffers v3<br/><br/>Commands, Queries, Events<br/>Language-Agnostic]
     end
 
     subgraph "Testing"
@@ -128,11 +128,11 @@ graph TB
     subgraph "Demo Frontend Stack"
         UI[React Web UI<br/>React 19 + TypeScript<br/>Vite 5 + Bootstrap 5<br/>Port 3000<br/><br/>Features:<br/>- Dashboard<br/>- Create Shipments<br/>- Track Status<br/>- Mark Delivered]
 
-        API[FastAPI Backend<br/>Python 3.11<br/>Port 8000<br/><br/>REST API Gateway<br/>OpenAPI Docs at /docs<br/><br/>Translates HTTP ↔ Protobuf]
+        API[FastAPI Backend<br/>Python 3.11<br/>Port 8000<br/><br/>REST API Gateway<br/>OpenAPI Docs at /docs<br/><br/>HTTP to Protobuf Bridge]
     end
 
     subgraph "CQRS Backend - Black Box"
-        BACKEND[BeeGees CQRS System<br/><br/>• Write Node - Commands<br/>• Read Node - Queries<br/>• RabbitMQ - Message Broker<br/>• PostgreSQL - Dual Databases<br/>• Protocol Buffers - Messages<br/><br/>See Diagram 1 for details]
+        BACKEND[BeeGees CQRS System<br/><br/>Write Node - Commands<br/>Read Node - Queries<br/>RabbitMQ - Message Broker<br/>PostgreSQL - Dual Databases<br/>Protocol Buffers - Messages<br/><br/>See Diagram 1 for details]
     end
 
     %% User interactions
@@ -144,8 +144,8 @@ graph TB
     UI -->|HTTP| BROWSER
 
     style BROWSER fill:#f0f0f0,stroke:#333,stroke-width:2px
-    style UI fill:#61dafb,stroke:#333,stroke-width:2px
-    style API fill:#009688,stroke:#333,stroke-width:2px
+    style UI fill:#0d6efd,stroke:#333,stroke-width:2px,color:#fff
+    style API fill:#009688,stroke:#333,stroke-width:2px,color:#fff
     style BACKEND fill:#e0e0e0,stroke:#333,stroke-width:4px,stroke-dasharray: 5 5
 ```
 
