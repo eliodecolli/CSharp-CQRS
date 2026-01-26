@@ -5,4 +5,4 @@ pydantic-settings==2.6.1
 aio-pika==9.4.3
 protobuf==5.29.2
 grpcio-tools==1.69.0
-python-multipart==0.0.18
+python-multipart==0.0.22
